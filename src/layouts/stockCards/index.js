@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import "./style.css";
-import axios from "axios";
 import { DataGrid, Editing, Column, ValidationRule, Button } from "devextreme-react/data-grid";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+import useAxios from "../../service/useAxios";
 
 const allowDeleting = (e) => e.row.data.ID !== 1;
 
@@ -20,10 +20,11 @@ const onInitNewRow = (e) => {
 
 const StockCards = () => {
   const [employees, setEmployees] = useState([]);
+  const { axiosWithToken } = useAxios();
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get("/api/employees");
+      const response = await axiosWithToken.post("/StockCard/Search");
       setEmployees(response.data);
     } catch (error) {
       console.error("Error fetching employees:", error);
@@ -32,7 +33,7 @@ const StockCards = () => {
 
   const handleAddEmployee = async (newData) => {
     try {
-      const response = await axios.post("/api/employees", newData);
+      const response = await axiosWithToken.post("/api/employees", newData);
       fetchEmployees();
     } catch (error) {
       console.error("Error adding employee:", error);
@@ -41,7 +42,7 @@ const StockCards = () => {
 
   const handleUpdateEmployee = async (key, updatedData) => {
     try {
-      await axios.put(`/api/employees/${key}`, updatedData);
+      await axiosWithToken.put(`/api/employees/${key}`, updatedData);
       fetchEmployees();
     } catch (error) {
       console.error("Error updating employee:", error);
@@ -50,7 +51,7 @@ const StockCards = () => {
 
   const handleDeleteEmployee = async (key) => {
     try {
-      await axios.delete(`/api/employees/${key}`);
+      await axiosWithToken.delete(`/api/employees/${key}`);
       fetchEmployees();
     } catch (error) {
       console.error("Error deleting employee:", error);
@@ -85,16 +86,16 @@ const StockCards = () => {
             allowAdding={true}
             mode="form"
           />
-          <Column dataField="Prefix" caption="ProductGroupId">
+          <Column dataField="ProductGroupId" caption="ProductGroupId">
             <ValidationRule type="required" />
           </Column>
-          <Column dataField="Prefix" caption="NameOfThePurchasingCompanyId">
+          <Column dataField="NameOfThePurchasingCompanyId" caption="NameOfThePurchasingCompanyId">
             <ValidationRule type="required" />
           </Column>
-          <Column dataField="Prefix" caption="StockCardBrandId">
+          <Column dataField="StockCardBrandId" caption="StockCardBrandId">
             <ValidationRule type="required" />
           </Column>
-          <Column dataField="Title" caption="StockCardUnitId">
+          <Column dataField="StockCardUnitId" caption="StockCardUnitId">
             <ValidationRule type="required" />
           </Column>
           <Column type="buttons">
