@@ -13,221 +13,130 @@ import DataGrid, {
   Editing,
   ValidationRule,
   Button,
+  Paging,
+  Sorting,
+  Selection,
 } from "devextreme-react/data-grid";
 import CustomStore from "devextreme/data/custom_store";
 
-const allowDeleting = (e) => e.row.data.ID !== 1;
-
-const onEditorPreparing = (e) => {
-  if (e.dataField === "Head_ID" && e.row.data.ID === 1) {
-    e.editorOptions.disabled = true;
-    e.editorOptions.value = null;
-  }
-};
-
-const onInitNewRow = (e) => {
-  e.data.Head_ID = 1;
-};
-
 const Units = () => {
-  const [employees, setEmployees] = useState([]);
+  const prepareFilterBody = (loadOptions, extraData, keys) => {
+    let paging = {
+      skip: loadOptions.skip,
+      take: loadOptions.take,
+      sort: prepareSort(loadOptions, keys),
+      filter: loadOptions.filter ? JSON.stringify(loadOptions.filter) : null,
+      isLoadingAll: loadOptions.isLoadingAll,
+    };
 
-  const fetchEmployees = async () => {
-    try {
-      const response = await axios.get("/StockCardUnit/Filter");
-      setEmployees(response.data);
-    } catch (error) {
-      console.error("Error fetching employees:", error);
-    }
+    if (loadOptions?.group?.length > 0) paging.dataField = loadOptions.group[0].selector;
+    else paging.dataField = loadOptions.dataField;
+
+    paging.requireTotalCount = loadOptions.requireTotalCount;
+    paging.userData = extraData;
+
+    return paging;
   };
 
-  const handleAddEmployee = async (newData) => {
-    try {
-      const response = await axios.post("/StockCardUnit/Filter", newData);
-      fetchEmployees();
-    } catch (error) {
-      console.error("Error adding employee:", error);
+  const prepareSort = (loadOptions) => {
+    let sorts = [];
+
+    if (loadOptions.sort) {
+      loadOptions.sort.forEach((sortDt) => {
+        sorts.push({
+          Desc: sortDt.desc ?? false,
+          Selector: sortDt.selector,
+        });
+      });
+    } else {
+      sorts.push({
+        Desc: false,
+        Selector: "Id",
+      });
     }
+    return sorts;
   };
 
-  const handleUpdateEmployee = async (key, updatedData) => {
-    try {
-      await axios.put(`/StockCardUnit/Filter/${key}`, updatedData);
-      fetchEmployees();
-    } catch (error) {
-      console.error("Error updating employee:", error);
-    }
-  };
-
-  const handleDeleteEmployee = async (key) => {
-    try {
-      await axios.delete(`/StockCardUnit/Filter/${key}`);
-      fetchEmployees();
-    } catch (error) {
-      console.error("Error deleting employee:", error);
-    }
-  };
-
-  const dataSource = new CustomStore({
-    load: async (loadOptions) => {
+  const mainDataSource = new CustomStore({
+    load: (loadOptions) => {
       try {
-        console.warn(loadOptions);
-        const response = await axios.post("/StockCardUnit/Filter", loadOptions);
-        return {
-          data: res.Items || [],
-          totalCount: res.TotalCount || 0,
-        };
+        return fetch("https://localhost:44380/Unit/Filter", {
+          method: "post",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(prepareFilterBody(loadOptions)),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            return {
+              data: data.Items,
+              totalCount: data.TotalCount,
+            };
+          })
+          .catch((error) => {
+            console.error("Data loading error", error);
+            throw error;
+          });
+
+        // return axios
+        //   .post("/Unit/Filter", JSON.stringify(prepareFilterBody(loadOptions)))
+        //   .then((res) => {
+        //     return {
+        //       data: res.Items || [],
+        //       totalCount: res.TotalCount || 0,
+        //     };
+        //   });
       } catch (error) {
-        console.error("Error adding employee:", error);
+        console.error("Units/Filter:", error);
       }
     },
   });
 
-  //   this.mainDataSource = new CustomStore({
-  //     key: 'FootPrintId',
-  //     load: (loadOptions: any) => {
-
-  //       that.mainDatagrid.instance.clearSelection();
-  //       if (this.dateRange.length < 2) {
-  //         return Promise.reject("Başlangıç ve bitiş tarihleri girmelisiniz!");
-  //       }
-
-  //       let filterFormData: any = {
-  //         beginDate: this.dateRange[0],
-  //         endDate: this.dateRange[1],
-  //       }
-
-  //       let body = that.prepareFilterBody(loadOptions, filterFormData);
-  //       return that.httpList(api/footprints, body);
-  //     },
-  //     }); //TODO : İNSERT UPDATE VS ALSO
-
-  // this.mainDataSource = new CustomStore({
-  //   key: 'FraudTypesId',
-  //   load: (loadOptions: any) => {
-
-  //     loadOptions.key = 'Name';
-  //     let body = that.prepareFilterBody(loadOptions, null);
-
-  //     return that.httpList(api/fraud-types, body);
-  //   },
-  //   insert: (values) => {
-
-  //     return that.httpPost(api/fraud-type/insertOrUpdate, values)
-  //       .then((res: any) => {
-
-  //         if (!res.HasError)
-  //           notify("Yeni kayıt işlemi tamamlandı", "success", 1500);
-  //       })
-  //       .catch(error => {
-  //         console.log("api/fraud-type/insertOrUpdate : " + error);
-  //         throw "Hatalı işlem!"
-  //       });
-  //   },
-  //   update: (key, values) => {
-
-  //     let post_values = { ...that.mainDatagrid.instance.getDataSource().items().find(i => i.FraudTypesId == key), ...values };
-  //     return that.httpPost(api/fraud-type/insertOrUpdate, post_values)
-  //       .then((res: any) => {
-
-  //         if (!res.HasError)
-  //           notify("Güncelleme işlemi tamamlandı", "success", 1500);
-  //       })
-  //       .catch(error => {
-  //         console.log("api/fraud-type/insertOrUpdate : " + error);
-  //         throw "Hatalı işlem!"
-  //       });
-  //   },
-  //   remove: (key) => {
-
-  //     return that.httpDelete(api/fraud-type/${key}/delete)
-  //       .then((res: any) => {
-
-  //         if (!res.HasError)
-  //           notify("Silme işlemi tamamlandı", "success", 1500);
-  //       })
-  //       .catch(error => {
-  //         console.log(`api/fraud-type/${key}/delete : ` + error);
-  //         throw "Hatalı işlem!"
-  //       });
-  //       }
-  //     });
-
-  // httpList(url: string, body: any) {
-
-  //   let that = this;
-
-  //   if(this.hasGlobalLoading)
-  //     this._loadPanelService.showLoader();
-
-  //   return lastValueFrom(this.http.post<any>(${this._appConfigService.inapiUrl}/${url}, body))
-  //     .then((res: any) => {
-
-  //       if (res.Success || res.success)
-  //        return Promise.resolve({
-  //           data: res.Items || res.items || [],
-  //           totalCount: res.TotalCount || res.totalCount || 0,
-  //         });
-  //       else
-  //         Promise.reject(res.Error || res.error || "Sunucu hatası!")
-  //     })
-  //     .finally(() => {
-
-  //       if(this.hasGlobalLoading)
-  //         this._loadPanelService.hideLoader();
-  //
-  //       });
-  //   }
-
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
+  // useEffect(() => {
+  //   fetchEmployees();
+  // }, []);
 
   return (
     <div id="data-grid-demo">
       <DashboardLayout>
         <DashboardNavbar />
         <DataGrid
-          id="employees"
-          dataSource={employees}
-          columnAutoWidth={true}
+          dataSource={mainDataSource}
+          wordWrapEnabled={true}
+          remoteOperations={true}
+          repaintChangesOnly={true}
+          showBorders={false}
+          showColumnLines={false}
           showRowLines={true}
-          showBorders={true}
-          keyExpr="ID"
-          parentIdExpr="Head_ID"
-          onEditorPreparing={onEditorPreparing}
-          onInitNewRow={onInitNewRow}
-          onRowInserted={(e) => handleAddEmployee(e.data)}
-          onRowUpdated={(e) => handleUpdateEmployee(e.key, e.data)}
-          onRowRemoved={(e) => handleDeleteEmployee(e.key)}
+          height="100%"
+          width="100%"
+          hoverStateEnabled={false}
+          cacheEnabled={false}
+          syncLookupFilterValues={false}
+          selectedRowKeys={[]}
         >
+          <Scrolling scrollByContent={true} scrollByThumb={true} preloadEnabled={true} />
+          <Sorting mode="single" />
           <Editing
+            mode="row"
+            allowDeleting={true}
+            useIcons={true}
+            newRowPosition="pageBottom"
             allowUpdating={true}
-            allowDeleting={allowDeleting}
-            allowAdding={true}
-            mode="form"
+            allowAdding={false}
           />
-
+          <Selection mode="single" />
           <FilterRow visible={true} />
-          <FilterPanel visible={true} />
-          <HeaderFilter visible={true} />
-          <Scrolling mode="infinite" />
+          <Paging pageSize={20} />
 
-          <Column dataField="Prefix" caption="ProductGroupId">
-            <ValidationRule type="required" />
-          </Column>
-          <Column dataField="Prefix" caption="NameOfThePurchasingCompanyId">
-            <ValidationRule type="required" />
-          </Column>
-          <Column dataField="Prefix" caption="StockCardBrandId">
-            <ValidationRule type="required" />
-          </Column>
-          <Column dataField="Title" caption="StockCardUnitId">
-            <ValidationRule type="required" />
-          </Column>
-          <Column type="buttons">
-            <Button name="edit" />
-            <Button name="delete" />
+          <Column dataField="Name" caption="Name">
+            <Editing
+              validationRules={[
+                { type: "required", message: "?" },
+                { type: "stringLength", max: 250, message: "Maksimum 250 karakter" },
+              ]}
+            />
           </Column>
         </DataGrid>
       </DashboardLayout>

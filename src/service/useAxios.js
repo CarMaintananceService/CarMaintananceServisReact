@@ -19,7 +19,7 @@ const useAxios = () => {
           const refreshToken = localStorage.getItem("refreshToken"); // Retrieve the stored refresh token.
           // Make a request to your auth server to refresh the token.
           const response = await axios.post(
-            `${process.env.REACT_APP_SERVER_API_URL}/Login/RefreshToken`,
+            `${process.env.REACT_APP_SERVER_API_URL}/login/refreshtoken`,
             {
               refreshToken,
             }
