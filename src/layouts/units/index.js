@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import "./style.css";
 import axios from "axios";
 //import { DataGrid, Editing, Column, ValidationRule, Button } from "devextreme-react/data-grid";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+import notify from "devextreme/ui/notify";
 import DataGrid, {
   Column,
   FilterRow,
@@ -18,90 +19,96 @@ import DataGrid, {
   Selection,
 } from "devextreme-react/data-grid";
 import CustomStore from "devextreme/data/custom_store";
+import { prepareFilterBody } from "shared/dxHelpers";
 
 const Units = () => {
-  const prepareFilterBody = (loadOptions, extraData, keys) => {
-    let paging = {
-      skip: loadOptions.skip,
-      take: loadOptions.take,
-      sort: prepareSort(loadOptions, keys),
-      filter: loadOptions.filter ? JSON.stringify(loadOptions.filter) : null,
-      isLoadingAll: loadOptions.isLoadingAll,
-    };
-
-    if (loadOptions?.group?.length > 0) paging.dataField = loadOptions.group[0].selector;
-    else paging.dataField = loadOptions.dataField;
-
-    paging.requireTotalCount = loadOptions.requireTotalCount;
-    paging.userData = extraData;
-
-    return paging;
-  };
-
-  const prepareSort = (loadOptions) => {
-    let sorts = [];
-
-    if (loadOptions.sort) {
-      loadOptions.sort.forEach((sortDt) => {
-        sorts.push({
-          Desc: sortDt.desc ?? false,
-          Selector: sortDt.selector,
-        });
-      });
-    } else {
-      sorts.push({
-        Desc: false,
-        Selector: "Id",
-      });
-    }
-    return sorts;
-  };
+  const gridRef = useRef(null);
 
   const mainDataSource = new CustomStore({
+    key: "Id",
     load: (loadOptions) => {
       try {
-        return fetch("https://localhost:44380/Unit/Filter", {
-          method: "post",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(prepareFilterBody(loadOptions)),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            return {
-              data: data.Items,
-              totalCount: data.TotalCount,
-            };
+        return axios
+          .post("https://localhost:44380/Unit/Filter", prepareFilterBody(loadOptions))
+          .then((response) => {
+            const res = response.data;
+            if (res.Success) {
+              return {
+                data: res.Items,
+                totalCount: res.TotalCount,
+              };
+            } else {
+              throw new Error(res.Error);
+            }
           })
           .catch((error) => {
             console.error("Data loading error", error);
             throw error;
           });
-
-        // return axios
-        //   .post("/Unit/Filter", JSON.stringify(prepareFilterBody(loadOptions)))
-        //   .then((res) => {
-        //     return {
-        //       data: res.Items || [],
-        //       totalCount: res.TotalCount || 0,
-        //     };
-        //   });
       } catch (error) {
         console.error("Units/Filter:", error);
       }
     },
+    insert: (values) => {
+      return axios
+        .post(`https://localhost:44380/Unit/insertOrUpdate`, values)
+        .then((res) => {
+          res = res.data;
+          if (res.Success) notify("Yeni kayıt işlemi tamamlandı", "success", 1500);
+          else throw res.Error;
+        })
+        .catch((error) => {
+          console.error("Units/insertOrUpdate : " + error);
+          throw "Hatalı işlem!";
+        });
+    },
+    update: (key, values) => {
+      let post_values = {
+        ...gridRef.current.instance
+          .getDataSource()
+          .items()
+          .find((i) => i.Id == key),
+        ...values,
+      };
+      return axios
+        .post(`https://localhost:44380/Unit/insertOrUpdate`, post_values)
+        .then((res) => {
+          res = res.data;
+          if (res.Success) notify("Güncelleme işlemi tamamlandı", "success", 1500);
+          else throw res.Error;
+        })
+        .catch((error) => {
+          console.error("Units/insertOrUpdate : " + error);
+          throw "Hatalı işlem!";
+        });
+    },
+    remove: (key) => {
+      return axios
+        .get(`https://localhost:44380/Unit/Delete/${key}`)
+        .then((res) => {
+          res = res.data;
+          if (res.Success) notify("Silme işlemi tamamlandı", "success", 1500);
+          else throw res.Error;
+        })
+        .catch((error) => {
+          console.error(`Units/Delete/${key}/delete : ` + error);
+          throw "Hatalı işlem!";
+        });
+    },
   });
 
-  // useEffect(() => {
-  //   fetchEmployees();
-  // }, []);
+  useEffect(() => {
+    if (gridRef.current) {
+      console.log(gridRef.current.instance);
+    }
+  }, []);
 
   return (
     <div id="data-grid-demo">
       <DashboardLayout>
         <DashboardNavbar />
         <DataGrid
+          ref={gridRef}
           dataSource={mainDataSource}
           wordWrapEnabled={true}
           remoteOperations={true}
@@ -129,7 +136,6 @@ const Units = () => {
           <Selection mode="single" />
           <FilterRow visible={true} />
           <Paging pageSize={20} />
-
           <Column dataField="Name" caption="Name">
             <Editing
               validationRules={[
