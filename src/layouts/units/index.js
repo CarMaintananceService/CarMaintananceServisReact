@@ -1,35 +1,32 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect } from "react";
+import { useSelector } from "react-redux";
 import "./style.css";
-import axios from "axios";
-//import { DataGrid, Editing, Column, ValidationRule, Button } from "devextreme-react/data-grid";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import notify from "devextreme/ui/notify";
 import DataGrid, {
   Column,
   FilterRow,
-  HeaderFilter,
-  FilterPanel,
   Scrolling,
   Editing,
-  ValidationRule,
-  Button,
   Paging,
   Sorting,
   Selection,
 } from "devextreme-react/data-grid";
 import CustomStore from "devextreme/data/custom_store";
 import { prepareFilterBody } from "shared/dxHelpers";
+import useAxios from "../../service/useAxios";
 
 const Units = () => {
   const gridRef = useRef(null);
+  const { axiosInstance } = useAxios(); // Destructure axiosInstance from the custom hook
 
   const mainDataSource = new CustomStore({
     key: "Id",
     load: (loadOptions) => {
       try {
-        return axios
-          .post("https://localhost:44380/Unit/Filter", prepareFilterBody(loadOptions))
+        return axiosInstance
+          .post("/Unit/Filter", prepareFilterBody(loadOptions))
           .then((response) => {
             const res = response.data;
             if (res.Success) {
@@ -50,8 +47,8 @@ const Units = () => {
       }
     },
     insert: (values) => {
-      return axios
-        .post(`https://localhost:44380/Unit/insertOrUpdate`, values)
+      return axiosInstance
+        .post("/Unit/insertOrUpdate", values)
         .then((res) => {
           res = res.data;
           if (res.Success) notify("Yeni kayıt işlemi tamamlandı", "success", 1500);
@@ -67,11 +64,11 @@ const Units = () => {
         ...gridRef.current.instance
           .getDataSource()
           .items()
-          .find((i) => i.Id == key),
+          .find((i) => i.Id === key),
         ...values,
       };
-      return axios
-        .post(`https://localhost:44380/Unit/insertOrUpdate`, post_values)
+      return axiosInstance
+        .post("/Unit/insertOrUpdate", post_values)
         .then((res) => {
           res = res.data;
           if (res.Success) notify("Güncelleme işlemi tamamlandı", "success", 1500);
@@ -83,15 +80,15 @@ const Units = () => {
         });
     },
     remove: (key) => {
-      return axios
-        .get(`https://localhost:44380/Unit/Delete/${key}`)
+      return axiosInstance
+        .delete(`/Unit/Delete?id=${key}`)
         .then((res) => {
           res = res.data;
           if (res.Success) notify("Silme işlemi tamamlandı", "success", 1500);
           else throw res.Error;
         })
         .catch((error) => {
-          console.error(`Units/Delete/${key}/delete : ` + error);
+          console.error(`Units/Delete/${key}/delete : `, error);
           throw "Hatalı işlem!";
         });
     },
@@ -131,7 +128,7 @@ const Units = () => {
             useIcons={true}
             newRowPosition="pageBottom"
             allowUpdating={true}
-            allowAdding={false}
+            allowAdding={true}
           />
           <Selection mode="single" />
           <FilterRow visible={true} />
