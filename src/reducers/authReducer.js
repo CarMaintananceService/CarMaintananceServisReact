@@ -1,18 +1,25 @@
-// src/reducers/authReducer.js
+//authSlice.js
+import { createSlice } from "@reduxjs/toolkit";
+
 const initialState = {
-  token: null,
+  token: localStorage.getItem("accessToken") || null,
+  refreshToken: localStorage.getItem("refreshToken") || null,
 };
 
-const authReducer = (state = initialState, action) => {
-  switch (action.type) {
-    case "SET_TOKEN":
-      return {
-        ...state,
-        token: action.payload,
-      };
-    default:
-      return state;
-  }
-};
+const authSlice = createSlice({
+  name: "auth",
+  initialState,
+  reducers: {
+    setTokens(state, action) {
+      state.token = action.payload.token;
+      state.refreshToken = action.payload.refreshToken;
+    },
+    clearTokens(state) {
+      state.token = null;
+      state.refreshToken = null;
+    },
+  },
+});
 
-export default authReducer;
+export const { setTokens, clearTokens } = authSlice.actions;
+export default authSlice.reducer;

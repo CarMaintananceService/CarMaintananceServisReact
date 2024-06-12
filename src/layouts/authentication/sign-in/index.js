@@ -1,5 +1,7 @@
 import { useState } from "react";
-import axios from "axios"; // API istekleri için axios'u ekliyoruz.
+import { useDispatch } from "react-redux";
+import axios from "axios";
+import useAxios from "../../../service/useAxios"; // API istekleri için axios'u ekliyoruz.
 // @mui material components
 import Card from "@mui/material/Card";
 import Switch from "@mui/material/Switch";
@@ -12,12 +14,17 @@ import MDButton from "components/MDButton";
 import BasicLayout from "layouts/authentication/components/BasicLayout";
 // Images
 import bgImage from "assets/images/bg-sign-in-basic.jpeg";
+// Redux actions
+import { setTokens } from "../../../reducers/authReducer";
+import { Email } from "@mui/icons-material";
 
 function Basic() {
   const [rememberMe, setRememberMe] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const dispatch = useDispatch();
+  const { axiosInstance } = useAxios();
 
   const handleSetRememberMe = () => setRememberMe(!rememberMe);
 
@@ -26,17 +33,28 @@ function Basic() {
     setError(""); // Her gönderimde hatayı sıfırlıyoruz.
 
     try {
-      const response = await axios.post("/Login/GenerateAccesstoken", {
-        email,
-        password,
+      const response = await axiosInstance.post("/Login/GenerateAccesstoken", {
+        UserName: email,
+        Password: password,
       });
 
+      if (!response.data.Result.isActive || response.data.Result.isExpired) {
+        return;
+      }
       // Eğer giriş başarılı olursa, JWT access ve refresh token'ları localStorage'a kaydediyoruz.
-      if (response.AccessToken && response.AccessToken.Token && response.AccessToken.RefreshToken) {
-        localStorage.setItem("accessToken", response.AccessToken.Token);
-        localStorage.setItem("refreshToken", response.AccessToken.RefreshToken);
+      if (
+        response.data.Result.AccessToken &&
+        response.data.Result.AccessToken.token &&
+        response.data.Result.AccessToken.refreshToken
+      ) {
+        const { token, refreshToken } = response.data.Result.AccessToken;
+        localStorage.setItem("accessToken", token);
+        localStorage.setItem("refreshToken", refreshToken);
+        // Redux state'ini güncelle
+        dispatch(setTokens({ token: token, refreshToken: refreshToken }));
+        debugger;
         // Yönlendirme veya başka işlemler burada yapılabilir.
-        //TODO: state güncellenecek login ardından
+        window.location.href = "/dashboard";
       }
     } catch (err) {
       setError("Invalid email or password. Please try again.");
@@ -65,8 +83,8 @@ function Basic() {
           <MDBox component="form" role="form" onSubmit={handleSubmit}>
             <MDBox mb={2}>
               <MDInput
-                type="email"
-                label="Email"
+                type="text"
+                label="Username"
                 fullWidth
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

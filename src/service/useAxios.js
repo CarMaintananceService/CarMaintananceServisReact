@@ -1,50 +1,64 @@
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setTokens, clearTokens } from "../reducers/authReducer";
 
 const useAxios = () => {
-  const { token } = useSelector((state) => state.auth); //TODO:state güncellenecek login ardından
+  const dispatch = useDispatch();
+  const { token, refreshToken } = useSelector((state) => state.auth); // Redux state'inden token ve refreshToken alın
 
+  // Token gerektiren istekler için axios instance oluşturun
   const axiosInstance = axios.create({
     baseURL: `${process.env.REACT_APP_SERVER_API_URL}`,
     headers: { Authorization: `Bearer ${token}` },
   });
 
   axiosInstance.interceptors.response.use(
-    (response) => response, // Directly return successful responses.
+    (response) => response, // Başarılı yanıtları doğrudan döndürün
     async (error) => {
       const originalRequest = error.config;
-      if (error.response.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true; // Mark the request as retried to avoid infinite loops.
+      if (error.response && error.response.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true; // Tekrar etme işaretini ekleyin
         try {
-          const refreshToken = localStorage.getItem("refreshToken"); // Retrieve the stored refresh token.
-          // Make a request to your auth server to refresh the token.
+          //refreshToken state'te mevcut değilse, yedek olarak localStorage'dan almayı deneyi
+          const storedRefreshToken = refreshToken || localStorage.getItem("refreshToken");
+
+          if (!storedRefreshToken) {
+            // Eğer refreshToken state'de yoksa veya localStorage'den alınamıyorsa, kullanıcıyı giriş sayfasına yönlendir
+            dispatch(clearTokens());
+            window.location.href = "/login";
+            return Promise.reject(error);
+          }
+
+          // Yenileme isteği yapmak için axiosPublic kullanın, böylece token eklenmez
           const response = await axios.post(
             `${process.env.REACT_APP_SERVER_API_URL}/login/refreshtoken`,
             {
-              refreshToken,
+              refreshToken: storedRefreshToken,
             }
           );
-          const { Token, RefreshToken: newRefreshToken } = response.AccessToken;
-          // Store the new access and refresh tokens.
-          localStorage.setItem("accessToken", Token);
+          const { AccessToken: newToken, RefreshToken: newRefreshToken } = response.AccessToken;
+          // Yeni tokenları localStorage'a kaydedin
+          localStorage.setItem("accessToken", newToken);
           localStorage.setItem("refreshToken", newRefreshToken);
-          //TODO: update state with these values
-          // Update the authorization header with the new access token.
-          axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${Token}`;
-          return axiosInstance(originalRequest); // Retry the original request with the new access token.
+          dispatch(setTokens({ token: newToken, refreshToken: newRefreshToken })); // Yeni tokenları Redux state'e kaydedin
+          // Authorization header'ı yeni token ile güncelleyin
+          axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+          return axiosInstance(originalRequest); // Orijinal isteği yeni token ile tekrar edin
         } catch (refreshError) {
-          // Handle refresh token errors by clearing stored tokens and redirecting to the login page.
+          // Yenileme hatalarını yönetin, tokenları temizleyin ve login sayfasına yönlendirin
           console.error("Token refresh failed:", refreshError);
           localStorage.removeItem("accessToken");
           localStorage.removeItem("refreshToken");
+          dispatch(clearTokens());
           window.location.href = "/login";
           return Promise.reject(refreshError);
         }
       }
-      return Promise.reject(error); // For all other errors, return the error as is.
+      return Promise.reject(error); // Diğer tüm hatalar için hatayı olduğu gibi döndürün
     }
   );
 
+  // Token gerektirmeyen istekler için axiosPublic instance oluşturun
   const axiosPublic = axios.create({
     baseURL: `${process.env.REACT_APP_SERVER_API_URL}`,
   });
