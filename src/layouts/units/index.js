@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import "./style.css";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
@@ -20,6 +21,15 @@ import useAxios from "../../service/useAxios";
 const Units = () => {
   const gridRef = useRef(null);
   const { axiosInstance } = useAxios(); // Destructure axiosInstance from the custom hook
+  const navigate = useNavigate();
+  const { token } = useSelector((state) => state.auth); // Auth state'ten token alın
+
+  useEffect(() => {
+    // Eğer token yoksa, login sayfasına yönlendir
+    if (!token) {
+      navigate("/login");
+    }
+  }, [token, navigate]);
 
   const mainDataSource = new CustomStore({
     key: "Id",

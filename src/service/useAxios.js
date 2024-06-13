@@ -1,9 +1,11 @@
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { setTokens, clearTokens } from "../reducers/authReducer";
 
 const useAxios = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate(); // useNavigate hookunu kullanarak navigate fonksiyonunu alın
   const { token, refreshToken } = useSelector((state) => state.auth); // Redux state'inden token ve refreshToken alın
 
   // Token gerektiren istekler için axios instance oluşturun
@@ -25,7 +27,7 @@ const useAxios = () => {
           if (!storedRefreshToken) {
             // Eğer refreshToken state'de yoksa veya localStorage'den alınamıyorsa, kullanıcıyı giriş sayfasına yönlendir
             dispatch(clearTokens());
-            window.location.href = "/login";
+            navigate("/login"); // useNavigate ile yönlendirin
             return Promise.reject(error);
           }
 
@@ -50,7 +52,7 @@ const useAxios = () => {
           localStorage.removeItem("accessToken");
           localStorage.removeItem("refreshToken");
           dispatch(clearTokens());
-          window.location.href = "/login";
+          navigate("/login");
           return Promise.reject(refreshError);
         }
       }
