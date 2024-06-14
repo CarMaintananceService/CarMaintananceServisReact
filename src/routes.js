@@ -51,6 +51,18 @@ import Icon from "@mui/material/Icon";
 import Vehicles from "layouts/vehicles";
 import Units from "layouts/units";
 import StockCards from "layouts/stockCards";
+import VehicleBrands from "layouts/vehicleBrand";
+import StockCardBrands from "layouts/stockCardBrand";
+import StockCardUnit from "layouts/stockCardUnit";
+import VehicleType from "layouts/vehicleType";
+import Manufacturer from "layouts/manufacturer";
+import CaseType from "layouts/caseType";
+import Firms from "layouts/firms";
+import OutSourceLabor from "layouts/outSourceLabor";
+import ProductGroup from "layouts/productGroup";
+import { TreeView } from "devextreme-react";
+import treeview from "layouts/productGroup";
+import Treeview from "layouts/treeview";
 
 const routes = [
   {
@@ -63,12 +75,20 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "Tables",
-    key: "tables",
-    icon: <Icon fontSize="small">table_view</Icon>,
-    route: "/tables",
-    component: <Tables />,
+    name: "treeview",
+    key: "treeview",
+    icon: <Icon fontSize="small">dashboard</Icon>,
+    route: "/treeview",
+    component: <Treeview />,
   },
+  // {
+  //   type: "collapse",
+  //   name: "Tables",
+  //   key: "tables",
+  //   icon: <Icon fontSize="small">table_view</Icon>,
+  //   route: "/tables",
+  //   component: <Tables />,
+  // },
   {
     type: "collapse",
     name: "Vehicles",
@@ -76,6 +96,30 @@ const routes = [
     icon: <Icon fontSize="small">table_view</Icon>,
     route: "/vehicles",
     component: <Vehicles />,
+  },
+  {
+    type: "collapse",
+    name: "VehicleBrands",
+    key: "vehicleBrands",
+    icon: <Icon fontSize="small">table_view</Icon>,
+    route: "/vehicleBrand",
+    component: <VehicleBrands />,
+  },
+  {
+    type: "collapse",
+    name: "VehicleType",
+    key: "vehicleType",
+    icon: <Icon fontSize="small">table_view</Icon>,
+    route: "/vehicleType",
+    component: <VehicleType />,
+  },
+  {
+    type: "collapse",
+    name: "CaseType",
+    key: "caseType",
+    icon: <Icon fontSize="small">table_view</Icon>,
+    route: "/caseType",
+    component: <CaseType />,
   },
   {
     type: "collapse",
@@ -87,6 +131,30 @@ const routes = [
   },
   {
     type: "collapse",
+    name: "StockCards",
+    key: "stockCards",
+    icon: <Icon fontSize="small">table_view</Icon>,
+    route: "/stockCards",
+    component: <StockCards />,
+  },
+  {
+    type: "collapse",
+    name: "StockCardUnit",
+    key: "stockCardUnit",
+    icon: <Icon fontSize="small">table_view</Icon>,
+    route: "/stockCardUnit",
+    component: <StockCardUnit />,
+  },
+  {
+    type: "collapse",
+    name: "StockCardBrands",
+    key: "stockCardBrands",
+    icon: <Icon fontSize="small">table_view</Icon>,
+    route: "/stockCardBrand",
+    component: <StockCardBrands />,
+  },
+  {
+    type: "collapse",
     name: "StockMovements",
     key: "stockMovements",
     icon: <Icon fontSize="small">table_view</Icon>,
@@ -95,11 +163,35 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "StockCards",
-    key: "stockCards",
+    name: "Firm",
+    key: "firm",
     icon: <Icon fontSize="small">table_view</Icon>,
-    route: "/stockCards",
-    component: <StockCards />,
+    route: "/firms",
+    component: <Firms />,
+  },
+  {
+    type: "collapse",
+    name: "ProductGroup",
+    key: "productGroup",
+    icon: <Icon fontSize="small">table_view</Icon>,
+    route: "/productGroup",
+    component: <ProductGroup />,
+  },
+  {
+    type: "collapse",
+    name: "Manufacturer",
+    key: "manufacturer",
+    icon: <Icon fontSize="small">table_view</Icon>,
+    route: "/manufacturer",
+    component: <Manufacturer />,
+  },
+  {
+    type: "collapse",
+    name: "OutSourceLabor",
+    key: "outSourceLabor",
+    icon: <Icon fontSize="small">table_view</Icon>,
+    route: "/outSourceLabor",
+    component: <OutSourceLabor />,
   },
   {
     type: "collapse",

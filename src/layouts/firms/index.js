@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import "./style.css";
@@ -13,27 +13,16 @@ import DataGrid, {
   Paging,
   Sorting,
   Selection,
-  Button,
 } from "devextreme-react/data-grid";
 import CustomStore from "devextreme/data/custom_store";
 import { prepareFilterBody } from "shared/dxHelpers";
 import useAxios from "../../service/useAxios";
 
-const Vehicles = () => {
+const Firms = () => {
   const gridRef = useRef(null);
   const { axiosInstance } = useAxios(); // Destructure axiosInstance from the custom hook
   const navigate = useNavigate();
   const { token } = useSelector((state) => state.auth); // Auth state'ten token alın
-  const onEditting = useCallback((e) => {
-    console.log(e);
-    // const clonedItem = { ...e.row.data, ID: getMaxID() };
-    // setEmployees((prevState) => {
-    //   const updatedEmployees = [...prevState];
-    //   updatedEmployees.splice(e.row.rowIndex, 0, clonedItem);
-    //   return updatedEmployees;
-    // });
-    e.event.preventDefault();
-  }, []);
 
   useEffect(() => {
     // Eğer token yoksa, login sayfasına yönlendir
@@ -47,7 +36,7 @@ const Vehicles = () => {
     load: (loadOptions) => {
       try {
         return axiosInstance
-          .post("/Vehicle/Filter", prepareFilterBody(loadOptions))
+          .post("/Firm/Filter", prepareFilterBody(loadOptions))
           .then((response) => {
             const res = response.data;
             if (res.Success) {
@@ -64,19 +53,19 @@ const Vehicles = () => {
             throw error;
           });
       } catch (error) {
-        console.error("Vehicle/Filter:", error);
+        console.error("Firm/Filter:", error);
       }
     },
     insert: (values) => {
       return axiosInstance
-        .post("/Vehicle/InsertOrUpdate", values)
+        .post("/Firm/InsertOrUpdate", values)
         .then((res) => {
           res = res.data;
           if (res.Success) notify("Yeni kayıt işlemi tamamlandı", "success", 1500);
           else throw res.Error;
         })
         .catch((error) => {
-          console.error("Vehicle/InsertOrUpdate : " + error);
+          console.error("Firm/InsertOrUpdate : " + error);
           throw "Hatalı işlem!";
         });
     },
@@ -89,27 +78,27 @@ const Vehicles = () => {
         ...values,
       };
       return axiosInstance
-        .post("/Vehicle/InsertOrUpdate", post_values)
+        .post("/Firm/InsertOrUpdate", post_values)
         .then((res) => {
           res = res.data;
           if (res.Success) notify("Güncelleme işlemi tamamlandı", "success", 1500);
           else throw res.Error;
         })
         .catch((error) => {
-          console.error("Vehicle/InsertOrUpdate : " + error);
+          console.error("Firm/InsertOrUpdate : " + error);
           throw "Hatalı işlem!";
         });
     },
     remove: (key) => {
       return axiosInstance
-        .delete(`/Vehicle/Delete?id=${key}`)
+        .delete(`/Firm/Delete?id=${key}`)
         .then((res) => {
           res = res.data;
           if (res.Success) notify("Silme işlemi tamamlandı", "success", 1500);
           else throw res.Error;
         })
         .catch((error) => {
-          console.error(`Vehicle/Delete/${key}/delete : `, error);
+          console.error(`Firm/Delete/${key}/delete : `, error);
           throw "Hatalı işlem!";
         });
     },
@@ -154,11 +143,7 @@ const Vehicles = () => {
           <Selection mode="single" />
           <FilterRow visible={true} />
           <Paging pageSize={20} />
-          <Column type="buttons" width={110}>
-            <Button name="delete" />
-            <Button hint="Clone" icon="edit" onClick={onEditting} />
-          </Column>
-          <Column dataField="LicensePlateNo" caption="LicensePlateNo">
+          <Column dataField="Name" caption="Name">
             <Editing
               validationRules={[
                 { type: "required", message: "?" },
@@ -166,7 +151,15 @@ const Vehicles = () => {
               ]}
             />
           </Column>
-          <Column dataField="Model" caption="Model">
+          <Column dataField="Telephone" caption="Telephone">
+            <Editing
+              validationRules={[
+                { type: "required", message: "Telefon numarası zorunludur." },
+                { type: "stringLength", max: 15, message: "Maksimum 15 karakter" },
+              ]}
+            />
+          </Column>
+          <Column dataField="TaxNumber" caption="TaxNumber">
             <Editing
               validationRules={[
                 { type: "required", message: "?" },
@@ -174,15 +167,7 @@ const Vehicles = () => {
               ]}
             />
           </Column>
-          <Column dataField="ModelYear" caption="ModelYear">
-            <Editing
-              validationRules={[
-                { type: "required", message: "?" },
-                { type: "stringLength", max: 250, message: "Maksimum 250 karakter" },
-              ]}
-            />
-          </Column>
-          <Column dataField="Engine" caption="Engine">
+          <Column dataField="Address" caption="Address">
             <Editing
               validationRules={[
                 { type: "required", message: "?" },
@@ -196,4 +181,4 @@ const Vehicles = () => {
   );
 };
 
-export default Vehicles;
+export default Firms;
