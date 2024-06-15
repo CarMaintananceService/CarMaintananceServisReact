@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import "./style.css";
@@ -18,14 +18,18 @@ import DataGrid, {
 import CustomStore from "devextreme/data/custom_store";
 import { prepareFilterBody } from "shared/dxHelpers";
 import useAxios from "../../service/useAxios";
+import VehicleForm from "./VehicleForm.jsx";
 
 const Vehicles = () => {
   const gridRef = useRef(null);
   const { axiosInstance } = useAxios(); // Destructure axiosInstance from the custom hook
   const navigate = useNavigate();
   const { token } = useSelector((state) => state.auth); // Auth state'ten token alın
+  const [isVisible, setIsVisible] = useState(false);
+  const transactionData = {}; // API'den gelen veriyi buraya atayın.
   const onEditting = useCallback((e) => {
     console.log(e);
+    setIsVisible(true);
     // const clonedItem = { ...e.row.data, ID: getMaxID() };
     // setEmployees((prevState) => {
     //   const updatedEmployees = [...prevState];
@@ -191,6 +195,13 @@ const Vehicles = () => {
             />
           </Column>
         </DataGrid>
+        <>
+          <VehicleForm
+            isVisible={isVisible}
+            setIsVisible={setIsVisible}
+            transactionData={transactionData}
+          />
+        </>
       </DashboardLayout>
     </div>
   );
