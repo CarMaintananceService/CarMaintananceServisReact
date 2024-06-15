@@ -22,7 +22,7 @@ import VehicleForm from "./VehicleForm.jsx";
 
 const Vehicles = () => {
   const gridRef = useRef(null);
-  const { axiosInstance } = useAxios(); // Destructure axiosInstance from the custom hook
+  const { axiosInstance } = useAxios();
   const navigate = useNavigate();
   const { token } = useSelector((state) => state.auth); // Auth state'ten token alın
   const [isVisible, setIsVisible] = useState(false);

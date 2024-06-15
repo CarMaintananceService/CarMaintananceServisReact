@@ -1,95 +1,72 @@
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { Popup, Animation, Position, ToolbarItem } from "devextreme-react/popup";
-import { RadioGroup } from "devextreme-react/radio-group";
 import { ValidationGroup } from "devextreme-react/validation-group";
 import { Validator, CustomRule, RequiredRule } from "devextreme-react/validator";
-import TextArea from "devextreme-react/text-area";
 import notify from "devextreme/ui/notify";
 import CustomStore from "devextreme/data/custom_store";
 import "devextreme/dist/css/dx.light.css";
+import { RadioGroup } from "devextreme-react/radio-group";
+import TextArea from "devextreme-react/text-area";
 import TextBox, { TextBoxTypes } from "devextreme-react/text-box";
+import SelectBox from "devextreme-react/select-box";
+import { DateBox } from "devextreme-react/date-box";
+import { prepareFilterBody, searchRequestLoad } from "shared/dxHelpers";
+import useAxios from "../../service/useAxios";
 
 const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
+  const { axiosInstance } = useAxios();
+
   const [formData, setFormData] = useState({
-    LicensePlateNo: "",
-    Model: "",
-    ModelYear: 0,
-    Engine: "",
+    VehicleBrandId: null,
+    VehicleTypeId: null,
+    CaseTypeId: null,
+    LicensePlateNo: null,
+    Model: null,
+    ModelYear: null,
+    Engine: null,
   });
 
-  const [dsTransactionState, setDsTransactionState] = useState(null);
-  const [dsTransactionAction, setDsTransactionAction] = useState(null);
-  const [dsTransactionComment, setDsTransactionComment] = useState(null);
-
-  const fraudStateValidationGroup = useRef(null);
-  const actionValidationGroup = useRef(null);
-  const commentValidationGroup = useRef(null);
+  const mainValidationGroup = useRef(null);
 
   useEffect(() => {
-    createDxDataSources();
+    setFormData(transactionData);
   }, [formData.transactionState]);
 
-  const createDxDataSources = () => {
-    const transactionStateStore = new CustomStore({
-      key: "transactionStatesId",
-      load: () =>
-        fetch("api/transaction-states")
-          .then((response) => response.json())
-          .then((data) => data.filter((d) => d.isDisplayOnClient)),
-    });
+  const dsVehicleBrand = new CustomStore({
+    key: "Id",
+    load: (loadOptions) => {
+      return searchRequestLoad("VehicleBrand/Search", loadOptions, axiosInstance);
+    },
+  });
 
-    const transactionActionStore = new CustomStore({
-      key: "transactionActionsId",
-      load: () => {
-        if (!formData.transactionState) return [];
-        return fetch(`api/transaction-state/${formData.transactionState}/actions`)
-          .then((response) => response.json())
-          .then((data) => data.filter((d) => d.isActive));
-      },
-    });
+  const dsVehicleType = new CustomStore({
+    key: "Id",
+    load: (loadOptions) => {
+      return searchRequestLoad("VehicleType/Search", loadOptions, axiosInstance);
+    },
+  });
 
-    const transactionCommentStore = new CustomStore({
-      key: "transactionCommentsId",
-      load: () => {
-        if (!formData.transactionState) return [];
-        return fetch(`api/transaction-state/${formData.transactionState}/comments`)
-          .then((response) => response.json())
-          .then((data) => data.filter((d) => d.isActive));
-      },
-    });
-
-    setDsTransactionState(transactionStateStore);
-    setDsTransactionAction(transactionActionStore);
-    setDsTransactionComment(transactionCommentStore);
-  };
-
-  const validateCallback__fraudState = () => formData.transactionState !== null;
-  const validateCallback__transactionAction = () =>
-    !getLen__actions() || formData.transactionActionsId !== null;
-  const validateCallback__comment = () =>
-    formData.transactionCommentsId > 0 || formData.agentComment.length > 0;
-
-  const onValueChanged__rdoFraudState = (e) => {
-    setFormData({
-      ...formData,
-      transactionState: e.value,
-      transactionActionsId: null,
-      transactionCommentsId: null,
-    });
-  };
-
-  const completeTransaction = () => {
-    debugger;
-    console.log(formData);
-    if (!fraudStateValidationGroup.current.instance.validate().isValid) {
-      notify("Lütfen fraud durumunu seçiniz !", "warning", 2500);
+  const saveForm = () => {
+    if (!mainValidationGroup.current.instance.validate().isValid) {
+      notify("Lütfen zorunlu alanları doldurunuz !", "warning", 2500);
       return;
     }
-    // Gönderilecek veriyi burada hazırlayın ve API'ye gönderin
-    // fetch('api/transaction-result/complete', { method: 'POST', body: JSON.stringify(formData) }); //TODO
 
-    setIsVisible(false);
+    axiosInstance
+      .post("/Vehicle/InsertOrUpdate", formData)
+      .then((response) => {
+        const res = response.data;
+        if (res.Success) {
+          setIsVisible(false);
+        } else {
+          notify(res.Error, "error", 3500);
+        }
+      })
+      .catch((error) => {
+        console.error("Data loading error", error);
+        notify(JSON.stringify(error), "error", 3500);
+      });
   };
   const handleInputChange = (field, value) => {
     setFormData({
@@ -97,9 +74,6 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
       [field]: value,
     });
   };
-
-  const getLen__actions = () => (dsTransactionAction ? dsTransactionAction.totalCount() : 0);
-  const getLen__comments = () => (dsTransactionComment ? dsTransactionComment.totalCount() : 0);
 
   return (
     <Popup
@@ -119,17 +93,48 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
 
       <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: "5px" }}>
         <div style={{ height: "calc(100% - 100px)", padding: "10px" }}>
-          <ValidationGroup ref={fraudStateValidationGroup}>
+          <ValidationGroup ref={mainValidationGroup}>
+            <SelectBox
+              onValueChanged={(e) => handleInputChange("VehicleBrandId", e.value)}
+              value={formData.VehicleBrandId}
+              dataSource={dsVehicleBrand}
+              displayExpr="Name"
+              valueExpr="Id"
+              labelMode="floating"
+              label="Araç Markası"
+              searchEnabled={true}
+              showClearButton={true}
+            >
+              <Validator>
+                <RequiredRule message="" />
+              </Validator>
+            </SelectBox>
+            <SelectBox
+              onValueChanged={(e) => handleInputChange("VehicleTypeId", e.value)}
+              value={formData.VehicleTypeId}
+              dataSource={dsVehicleType}
+              displayExpr="Name"
+              valueExpr="Id"
+              labelMode="floating"
+              label="Araç Tipi"
+              searchEnabled={true}
+              showClearButton={true}
+            >
+              <Validator>
+                <RequiredRule message="" />
+              </Validator>
+            </SelectBox>
             <TextBox
               onValueChanged={(e) => handleInputChange("LicensePlateNo", e.value)}
               value={formData.LicensePlateNo}
               labelMode="floating"
               label="PlakaNo"
-              //TODO: MIN LENGTH
+              minxLength="5"
               maxLength="250"
+              showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="Zorunlu alan!" />
+                <RequiredRule message="" />
               </Validator>
             </TextBox>
             <TextBox
@@ -137,82 +142,25 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
               value={formData.Model}
               labelMode="floating"
               label="Model"
-              //TODO: MIN LENGTH
+              minxLength="5"
               maxLength="250"
+              showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="Zorunlu alan!" />
+                <RequiredRule message="" />
               </Validator>
             </TextBox>
+            <DateBox
+              onValueChanged={(e) => handleInputChange("ModelYear", e.value)}
+              value={formData.ModelYear}
+              labelMode="floating"
+              label="Model Yılı"
+              type="date"
+              displayFormat="dd-MM-yyyy"
+              serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
+              showClearButton={true}
+            />
           </ValidationGroup>
-
-          {/* <ValidationGroup ref={actionValidationGroup}>
-            <fieldset>
-              <legend>
-                {getLen__actions() > 0 && (
-                  <>
-                    Alınacak Aksiyonlar
-                    <div style={{ height: "5px", borderBottom: "1px solid #5486ff" }}></div>
-                  </>
-                )}
-              </legend>
-              <RadioGroup
-                dataSource={dsTransactionAction}
-                value={formData.transactionActionsId}
-                onValueChanged={(e) => setFormData({ ...formData, transactionActionsId: e.value })}
-                displayExpr="description"
-                valueExpr="transactionActionsId"
-              >
-                <Validator>
-                  <CustomRule
-                    message="Lütfen bir aksiyon seçiniz!"
-                    validationCallback={validateCallback__transactionAction}
-                    reevaluate={true}
-                  />
-                </Validator>
-              </RadioGroup>
-            </fieldset>
-          </ValidationGroup>
-
-          <ValidationGroup ref={commentValidationGroup}>
-            <fieldset>
-              <legend>
-                {getLen__comments() > 0 && (
-                  <>
-                    Belirlenmiş Yorumlar
-                    <div style={{ height: "5px", borderBottom: "1px solid #5486ff" }}></div>
-                  </>
-                )}
-              </legend>
-              <RadioGroup
-                dataSource={dsTransactionComment}
-                value={formData.transactionCommentsId}
-                onValueChanged={(e) => setFormData({ ...formData, transactionCommentsId: e.value })}
-                displayExpr="description"
-                valueExpr="transactionCommentsId"
-              >
-                <Validator>
-                  <CustomRule
-                    message="Lütfen bir yorum seçiniz veya özel bir yorum giriniz!"
-                    validationCallback={validateCallback__comment}
-                    reevaluate={true}
-                  />
-                </Validator>
-              </RadioGroup>
-            </fieldset>
-
-            <div style={{ marginTop: "15px", height: "45px" }} className="dxcontainer">
-              <TextArea
-                height="100%"
-                maxLength={250}
-                placeholder="Özel yorumlarınızı yazabilirsiniz.."
-                label="Özel yorumunuz"
-                labelMode="floating"
-                value={formData.agentComment}
-                onValueChanged={(e) => setFormData({ ...formData, agentComment: e.value })}
-              />
-            </div>
-          </ValidationGroup> */}
         </div>
       </div>
 
@@ -238,14 +186,13 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
           stylingMode: "text",
           type: "success",
           icon: "save",
-          onClick: completeTransaction,
+          onClick: saveForm,
         }}
       />
     </Popup>
   );
 };
 
-// Define prop types for the component
 VehicleForm.propTypes = {
   isVisible: PropTypes.bool.isRequired,
   setIsVisible: PropTypes.func.isRequired,

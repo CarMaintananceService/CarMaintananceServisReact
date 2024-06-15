@@ -37,3 +37,33 @@ export const prepareFilterBody = (loadOptions, extraData, keys) => {
 
   return paging;
 };
+
+export const prepareSearchBody = (loadOptions, extraData) => {
+  let body = loadOptions;
+  body.userData = extraData;
+
+  if (body.filter) return Promise.resolve([]);
+
+  if (body.searchValue) {
+    body.filter = JSON.stringify([body.searchExpr, "contains", body.searchValue]);
+  }
+
+  return body;
+};
+
+export const searchRequestLoad = (url, loadOptions, axiosInstance) => {
+  return axiosInstance
+    .post(url, prepareSearchBody(loadOptions))
+    .then((response) => {
+      const res = response.data;
+      if (res.Success) {
+        return res.Items;
+      } else {
+        throw new Error(res.Error);
+      }
+    })
+    .catch((error) => {
+      console.error("Data loading error", error);
+      throw error;
+    });
+};
