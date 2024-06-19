@@ -63,6 +63,7 @@ import ProductGroup from "layouts/productGroup";
 import { TreeView } from "devextreme-react";
 import treeview from "layouts/productGroup";
 import Treeview from "layouts/treeview";
+import { Children } from "react";
 
 const routes = [
   {
@@ -96,6 +97,14 @@ const routes = [
     icon: <Icon fontSize="small">table_view</Icon>,
     route: "/vehicles",
     component: <Vehicles />,
+    children: [
+      {
+        name: "Units",
+        key: "units",
+        route: "/vehicles",
+        component: <Vehicles />,
+      },
+    ],
   },
   {
     type: "collapse",

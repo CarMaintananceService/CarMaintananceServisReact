@@ -13,7 +13,7 @@ import MDButton from "components/MDButton";
 // Authentication layout components
 import BasicLayout from "layouts/authentication/components/BasicLayout";
 // Images
-import bgImage from "assets/images/bg-sign-in-basic.jpeg";
+//import bgImage from "assets/images/bg-sign-in-basic.jpeg";
 // Redux actions
 import { setTokens } from "../../../reducers/authReducer";
 import { Email } from "@mui/icons-material";
@@ -52,7 +52,6 @@ function Basic() {
         localStorage.setItem("refreshToken", refreshToken);
         // Redux state'ini güncelle
         dispatch(setTokens({ token: token, refreshToken: refreshToken }));
-        debugger;
         // Yönlendirme veya başka işlemler burada yapılabilir.
         window.location.href = "/dashboard";
       }
@@ -62,7 +61,7 @@ function Basic() {
   };
 
   return (
-    <BasicLayout image={bgImage}>
+    <BasicLayout>
       <Card>
         <MDBox
           variant="gradient"
