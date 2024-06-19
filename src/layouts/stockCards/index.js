@@ -1,65 +1,128 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import "./style.css";
-import { DataGrid, Editing, Column, ValidationRule, Button } from "devextreme-react/data-grid";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+import notify from "devextreme/ui/notify";
+import DataGrid, {
+  Column,
+  FilterRow,
+  Scrolling,
+  Editing,
+  Paging,
+  Sorting,
+  Selection,
+  Button,
+} from "devextreme-react/data-grid";
+import CustomStore from "devextreme/data/custom_store";
+import { prepareFilterBody } from "shared/dxHelpers";
 import useAxios from "../../service/useAxios";
+import StockCardForm from "./StockCardForm";
 
-const allowDeleting = (e) => e.row.data.ID !== 1;
-
-const onEditorPreparing = (e) => {
-  if (e.dataField === "Head_ID" && e.row.data.ID === 1) {
-    e.editorOptions.disabled = true;
-    e.editorOptions.value = null;
-  }
-};
-
-const onInitNewRow = (e) => {
-  e.data.Head_ID = 1;
-};
-
-const StockCards = () => {
-  const [employees, setEmployees] = useState([]);
-  const { axiosWithToken } = useAxios();
-
-  const fetchEmployees = async () => {
-    try {
-      const response = await axiosWithToken.post("/StockCard/Search");
-      setEmployees(response.data);
-    } catch (error) {
-      console.error("Error fetching employees:", error);
-    }
-  };
-
-  const handleAddEmployee = async (newData) => {
-    try {
-      const response = await axiosWithToken.post("/api/employees", newData);
-      fetchEmployees();
-    } catch (error) {
-      console.error("Error adding employee:", error);
-    }
-  };
-
-  const handleUpdateEmployee = async (key, updatedData) => {
-    try {
-      await axiosWithToken.put(`/api/employees/${key}`, updatedData);
-      fetchEmployees();
-    } catch (error) {
-      console.error("Error updating employee:", error);
-    }
-  };
-
-  const handleDeleteEmployee = async (key) => {
-    try {
-      await axiosWithToken.delete(`/api/employees/${key}`);
-      fetchEmployees();
-    } catch (error) {
-      console.error("Error deleting employee:", error);
-    }
-  };
+const StockCard = () => {
+  const gridRef = useRef(null);
+  const { axiosInstance } = useAxios();
+  const navigate = useNavigate();
+  const { token } = useSelector((state) => state.auth); // Auth state'ten token alın
+  const [isVisible, setIsVisible] = useState(false);
+  const transactionData = {}; // API'den gelen veriyi buraya atayın.
+  const onEditting = useCallback((e) => {
+    console.log(e);
+    setIsVisible(true);
+    // const clonedItem = { ...e.row.data, ID: getMaxID() };
+    // setEmployees((prevState) => {
+    //   const updatedEmployees = [...prevState];
+    //   updatedEmployees.splice(e.row.rowIndex, 0, clonedItem);
+    //   return updatedEmployees;
+    // });
+    e.event.preventDefault();
+  }, []);
 
   useEffect(() => {
-    fetchEmployees();
+    // Eğer token yoksa, login sayfasına yönlendir
+    if (!token) {
+      navigate("/login");
+    }
+  }, [token, navigate]);
+
+  const mainDataSource = new CustomStore({
+    key: "Id",
+    load: (loadOptions) => {
+      try {
+        return axiosInstance
+          .post("/StockCard/Filter", prepareFilterBody(loadOptions))
+          .then((response) => {
+            const res = response.data;
+            if (res.Success) {
+              return {
+                data: res.Items,
+                totalCount: res.TotalCount,
+              };
+            } else {
+              throw new Error(res.Error);
+            }
+          })
+          .catch((error) => {
+            console.error("Data loading error", error);
+            throw error;
+          });
+      } catch (error) {
+        console.error("StockCard/Filter:", error);
+      }
+    },
+    insert: (values) => {
+      return axiosInstance
+        .post("/StockCard/InsertOrUpdate", values)
+        .then((res) => {
+          res = res.data;
+          if (res.Success) notify("Yeni kayıt işlemi tamamlandı", "success", 1500);
+          else throw res.Error;
+        })
+        .catch((error) => {
+          console.error("StockCard/InsertOrUpdate : " + error);
+          throw "Hatalı işlem!";
+        });
+    },
+    update: (key, values) => {
+      let post_values = {
+        ...gridRef.current.instance
+          .getDataSource()
+          .items()
+          .find((i) => i.Id === key),
+        ...values,
+      };
+      return axiosInstance
+        .post("/StockCard/InsertOrUpdate", post_values)
+        .then((res) => {
+          res = res.data;
+          if (res.Success) notify("Güncelleme işlemi tamamlandı", "success", 1500);
+          else throw res.Error;
+        })
+        .catch((error) => {
+          console.error("StockCard/InsertOrUpdate : " + error);
+          throw "Hatalı işlem!";
+        });
+    },
+    remove: (key) => {
+      return axiosInstance
+        .delete(`/StockCard/Delete?id=${key}`)
+        .then((res) => {
+          res = res.data;
+          if (res.Success) notify("Silme işlemi tamamlandı", "success", 1500);
+          else throw res.Error;
+        })
+        .catch((error) => {
+          console.error(`StockCard/Delete/${key}/delete : `, error);
+          throw "Hatalı işlem!";
+        });
+    },
+  });
+
+  useEffect(() => {
+    if (gridRef.current) {
+      // console.log(gridRef.current.instance);
+    }
   }, []);
 
   return (
@@ -67,45 +130,81 @@ const StockCards = () => {
       <DashboardLayout>
         <DashboardNavbar />
         <DataGrid
-          id="employees"
-          dataSource={employees}
-          columnAutoWidth={true}
+          ref={gridRef}
+          dataSource={mainDataSource}
+          wordWrapEnabled={true}
+          remoteOperations={true}
+          repaintChangesOnly={true}
+          showBorders={false}
+          showColumnLines={false}
           showRowLines={true}
-          showBorders={true}
-          keyExpr="ID"
-          parentIdExpr="Head_ID"
-          onEditorPreparing={onEditorPreparing}
-          onInitNewRow={onInitNewRow}
-          onRowInserted={(e) => handleAddEmployee(e.data)}
-          onRowUpdated={(e) => handleUpdateEmployee(e.key, e.data)}
-          onRowRemoved={(e) => handleDeleteEmployee(e.key)}
+          height="100%"
+          width="100%"
+          hoverStateEnabled={false}
+          cacheEnabled={false}
+          syncLookupFilterValues={false}
+          selectedRowKeys={[]}
         >
+          <Scrolling scrollByContent={true} scrollByThumb={true} preloadEnabled={true} />
+          <Sorting mode="single" />
           <Editing
+            mode="row"
+            allowDeleting={true}
+            useIcons={true}
+            newRowPosition="pageBottom"
             allowUpdating={true}
-            allowDeleting={allowDeleting}
             allowAdding={true}
-            mode="form"
           />
-          <Column dataField="ProductGroupId" caption="ProductGroupId">
-            <ValidationRule type="required" />
-          </Column>
-          <Column dataField="NameOfThePurchasingCompanyId" caption="NameOfThePurchasingCompanyId">
-            <ValidationRule type="required" />
-          </Column>
-          <Column dataField="StockCardBrandId" caption="StockCardBrandId">
-            <ValidationRule type="required" />
-          </Column>
-          <Column dataField="StockCardUnitId" caption="StockCardUnitId">
-            <ValidationRule type="required" />
-          </Column>
-          <Column type="buttons">
-            <Button name="edit" />
+          <Selection mode="single" />
+          <FilterRow visible={true} />
+          <Paging pageSize={20} />
+          <Column type="buttons" width={110}>
             <Button name="delete" />
+            <Button hint="Clone" icon="edit" onClick={onEditting} />
+          </Column>
+          <Column dataField="ProductGroup" caption="ProductGroup">
+            <Editing
+              validationRules={[
+                { type: "required", message: "?" },
+                { type: "stringLength", max: 250, message: "Maksimum 250 karakter" },
+              ]}
+            />
+          </Column>
+          <Column dataField="NameOfThePurchasingCompany" caption="NameOfThePurchasingCompany">
+            <Editing
+              validationRules={[
+                { type: "required", message: "?" },
+                { type: "stringLength", max: 250, message: "Maksimum 250 karakter" },
+              ]}
+            />
+          </Column>
+          <Column dataField="StockCardBrand" caption="StockCardBrand">
+            <Editing
+              validationRules={[
+                { type: "required", message: "?" },
+                { type: "stringLength", max: 250, message: "Maksimum 250 karakter" },
+              ]}
+            />
+          </Column>
+          <Column dataField="StockCardUnit" caption="StockCardUnit">
+            <Editing
+              validationRules={[
+                { type: "required", message: "?" },
+                { type: "stringLength", max: 250, message: "Maksimum 250 karakter" },
+              ]}
+            />
           </Column>
         </DataGrid>
+        <>
+          <StockCardForm
+            isVisible={isVisible}
+            setIsVisible={setIsVisible}
+            transactionData={transactionData}
+          />
+        </>
       </DashboardLayout>
     </div>
   );
 };
 
-export default StockCards;
+export default StockCard;

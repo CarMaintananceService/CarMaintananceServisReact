@@ -1,0 +1,6 @@
+.dx-treeview-item {
+    color:white
+}
+.dx-treeview-item:hover {
+    color: blue;
+}

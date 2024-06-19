@@ -14,36 +14,25 @@ import { DateBox } from "devextreme-react/date-box";
 import { prepareFilterBody, searchRequestLoad } from "shared/dxHelpers";
 import useAxios from "../../service/useAxios";
 
-const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
+const StockCardForm = ({ isVisible, setIsVisible, transactionData }) => {
   const { axiosInstance } = useAxios();
 
   const [formData, setFormData] = useState({
-    VehicleBrandId: null,
-    VehicleTypeId: null,
-    CaseTypeId: null,
-    LicensePlateNo: null,
-    Model: null,
-    ModelYear: null,
-    Chassis: null,
-    License: null,
-    Chance: null,
-    ColorKeyCode: null,
-    RadioCode: null,
-    DateOfRegistration: null,
-    ReleaseDate: null,
-    EngineDisplacementPowerKW: null,
-    FuelTypeId: null,
-    NetWeight: null,
-    WarrantyEndDate: null,
-    DateOfLastMedicalInspection: null,
-    FenniMuayeneEndDate: null,
-    LastExhaustInspectionDate: null,
-    TrafficInsuranceStartDate: null,
-    TrafficInsuranceEndDate: null,
-    InsuranceStartDate: null,
-    InsuranceEndDate: null,
-    UnitUsingTheTool: null,
-    PhotoOfTheVehicle: null,
+    ProductGroupId: null,
+    NameOfThePurchasingCompanyId: null,
+    StockCardBrandId: null,
+    StockCardUnitId: null,
+    StockCode: null,
+    ProductCode: null,
+    Unit: null,
+    SpecialCode: null,
+    ManufacturerCode: null,
+    ShelfNumber: null,
+    BoxNumber: null,
+    PurchasePrice: null,
+    InvoiceNo: null,
+    Quantity: null,
+    PacanianPhoto: null,
     Description: null,
   });
 
@@ -53,32 +42,31 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
     setFormData(transactionData);
   }, [formData.transactionState]);
 
-  const dsVehicleBrand = new CustomStore({
+  const dsProductGroup = new CustomStore({
     key: "Id",
     load: (loadOptions) => {
-      return searchRequestLoad("VehicleBrand/Search", loadOptions, axiosInstance);
+      return searchRequestLoad("ProductGroup/Search", loadOptions, axiosInstance);
     },
   });
 
-  const dsVehicleType = new CustomStore({
+  const dsNameOfThePurchasingCompany = new CustomStore({
     key: "Id",
     load: (loadOptions) => {
-      return searchRequestLoad("VehicleType/Search", loadOptions, axiosInstance);
+      return searchRequestLoad("NameOfThePurchasingCompany/Search", loadOptions, axiosInstance);
     },
   });
-  const dsCaseType = new CustomStore({
+  const dsStockCardUnit = new CustomStore({
     key: "Id",
     load: (loadOptions) => {
-      return searchRequestLoad("CaseType/Search", loadOptions, axiosInstance);
+      return searchRequestLoad("StockCardUnit/Search", loadOptions, axiosInstance);
     },
   });
-  // TODO: STATIC VERİ ALACAK ŞEKİLDE DÜZENLENECEK BU İR ENUM DOSYASI
-  // const dsFuelType = new CustomStore({
-  //   key: "Id",
-  //   load: (loadOptions) => {
-  //     return searchRequestLoad("FuelType/Search", loadOptions, axiosInstance);
-  //   },
-  // });
+  const dsStockCardBrand = new CustomStore({
+    key: "Id",
+    load: (loadOptions) => {
+      return searchRequestLoad("StockCardBrand/Search", loadOptions, axiosInstance);
+    },
+  });
 
   const saveForm = () => {
     if (!mainValidationGroup.current.instance.validate().isValid) {
@@ -87,7 +75,7 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
     }
 
     axiosInstance
-      .post("/Vehicle/InsertOrUpdate", formData)
+      .post("/StockCard/InsertOrUpdate", formData)
       .then((response) => {
         const res = response.data;
         if (res.Success) {
@@ -128,13 +116,13 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
         <div style={{ height: "calc(100% - 100px)", padding: "10px" }}>
           <ValidationGroup ref={mainValidationGroup}>
             <SelectBox
-              onValueChanged={(e) => handleInputChange("VehicleBrandId", e.value)}
-              value={formData.VehicleBrandId}
-              dataSource={dsVehicleBrand}
+              onValueChanged={(e) => handleInputChange("ProductGroupId", e.value)}
+              value={formData.ProductGroupId}
+              dataSource={dsProductGroup}
               displayExpr="Name"
               valueExpr="Id"
               labelMode="floating"
-              label="Araç Markası"
+              label="ProductGroup"
               searchEnabled={true}
               showClearButton={true}
             >
@@ -143,13 +131,13 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
               </Validator>
             </SelectBox>
             <SelectBox
-              onValueChanged={(e) => handleInputChange("VehicleTypeId", e.value)}
-              value={formData.VehicleTypeId}
-              dataSource={dsVehicleType}
+              onValueChanged={(e) => handleInputChange("NameOfThePurchasingCompanyId", e.value)}
+              value={formData.NameOfThePurchasingCompanyId}
+              dataSource={dsNameOfThePurchasingCompany}
               displayExpr="Name"
               valueExpr="Id"
               labelMode="floating"
-              label="Araç Tipi"
+              label="NameOfThePurchasingCompanyId"
               searchEnabled={true}
               showClearButton={true}
             >
@@ -158,13 +146,13 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
               </Validator>
             </SelectBox>
             <SelectBox
-              onValueChanged={(e) => handleInputChange("CaseTypeId", e.value)}
-              value={formData.CaseTypeId}
-              dataSource={dsCaseType}
+              onValueChanged={(e) => handleInputChange("StockCardUnitId", e.value)}
+              value={formData.StockCardUnitId}
+              dataSource={dsStockCardUnit}
               displayExpr="Name"
               valueExpr="Id"
               labelMode="floating"
-              label="Kasa Tipi"
+              label="StockCardUnitId"
               searchEnabled={true}
               showClearButton={true}
             >
@@ -172,26 +160,26 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
                 <RequiredRule message="" />
               </Validator>
             </SelectBox>
-            {/* <SelectBox
-              onValueChanged={(e) => handleInputChange("FuelType", e.value)}
-              value={formData.FuelType}
-              dataSource={dsFuelType}
+            <SelectBox
+              onValueChanged={(e) => handleInputChange("StockCardBrandId", e.value)}
+              value={formData.StockCardBrandId}
+              dataSource={dsStockCardBrand}
               displayExpr="Name"
               valueExpr="Id"
               labelMode="floating"
-              label="Yakıt Tipi"
+              label="StockCardBrandId"
               searchEnabled={true}
               showClearButton={true}
             >
               <Validator>
                 <RequiredRule message="" />
               </Validator>
-            </SelectBox> */}
+            </SelectBox>
             <TextBox
-              onValueChanged={(e) => handleInputChange("LicensePlateNo", e.value)}
-              value={formData.LicensePlateNo}
+              onValueChanged={(e) => handleInputChange("StockCode", e.value)}
+              value={formData.StockCode}
               labelMode="floating"
-              label="PlakaNo"
+              label="StockCode"
               minxLength="5"
               maxLength="250"
               showClearButton={true}
@@ -201,10 +189,10 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
               </Validator>
             </TextBox>
             <TextBox
-              onValueChanged={(e) => handleInputChange("Model", e.value)}
-              value={formData.Model}
+              onValueChanged={(e) => handleInputChange("ProductCode", e.value)}
+              value={formData.ProductCode}
               labelMode="floating"
-              label="Model"
+              label="ProductCode"
               minxLength="5"
               maxLength="250"
               showClearButton={true}
@@ -214,16 +202,15 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
               </Validator>
             </TextBox>
             <DateBox
-              onValueChanged={(e) => handleInputChange("ModelYear", e.value)}
-              value={formData.ModelYear}
+              onValueChanged={(e) => handleInputChange("Unit", e.value)}
+              value={formData.Unit}
               labelMode="floating"
-              label="Model Yılı"
-              type="date"
-              displayFormat="dd-MM-yyyy"
-              serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
+              label="Unit"
+              minxLength="5"
+              maxLength="250"
               showClearButton={true}
             />
-            <TextBox
+            {/*<TextBox
               onValueChanged={(e) => handleInputChange("Engine", e.value)}
               value={formData.Engine}
               labelMode="floating"
@@ -326,6 +313,20 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
               value={formData.EngineDisplacementPowerKW}
               labelMode="floating"
               label="EngineDisplacementPowerKW"
+              minxLength="5"
+              maxLength="250"
+              showClearButton={true}
+            >
+              <Validator>
+                <RequiredRule message="" />
+              </Validator>
+            </TextBox>
+            <TextBox
+              //TODO: check for if it suits
+              onValueChanged={(e) => handleInputChange("FuelTypeId", e.value)}
+              value={formData.FuelTypeId}
+              labelMode="floating"
+              label="FuelTypeId"
               minxLength="5"
               maxLength="250"
               showClearButton={true}
@@ -465,7 +466,7 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
               <Validator>
                 <RequiredRule message="" />
               </Validator>
-            </TextBox>
+            </TextBox> */}
           </ValidationGroup>
         </div>
       </div>
@@ -499,10 +500,10 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
   );
 };
 
-VehicleForm.propTypes = {
+StockCardForm.propTypes = {
   isVisible: PropTypes.bool.isRequired,
   setIsVisible: PropTypes.func.isRequired,
   transactionData: PropTypes.object.isRequired,
 };
 
-export default VehicleForm;
+export default StockCardForm;
