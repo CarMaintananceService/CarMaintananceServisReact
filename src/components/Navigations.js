@@ -4,7 +4,7 @@ import TreeView from "devextreme-react/tree-view";
 import { useNavigate } from "react-router-dom";
 import "./n.css";
 
-const items = [
+const navItems = [
   {
     id: "1",
     text: "Dashboard",
@@ -13,24 +13,24 @@ const items = [
   },
   {
     id: "2",
-    text: "Vehicles",
+    text: "Araç tanımları",
     icon: "car",
     path: "/vehicles",
     items: [
-      { id: "2_1", text: "VehicleType", path: "/vehicleType" },
-      { id: "2_2", text: "Vehicle Brands", path: "/vehicleBrand" },
-      { id: "2_3", text: "CaseType", path: "/caseType" },
+      { id: "2_1", text: "Araç tipleri", path: "/vehicleType" },
+      { id: "2_2", text: "Araç markaları", path: "/vehicleBrand" },
+      { id: "2_3", text: "Kasa tiplri", path: "/caseType" },
     ],
   },
   {
     id: "3",
-    text: "StockCards",
+    text: "Stok kartları",
     icon: "folder",
     path: "/stockCards",
     items: [
-      { id: "3_1", text: "StockCardUnit", path: "/stockCardUnit" },
-      { id: "3_2", text: "StockCardBrands", path: "/stockCardBrand" },
-      { id: "3_3", text: "StockMovements", path: "/stockMovements" },
+      { id: "3_1", text: "Birimler", path: "/stockCardUnit" },
+      { id: "3_2", text: "Markalar", path: "/stockCardBrand" },
+      { id: "3_3", text: "Hareketler", path: "/stockMovements" },
     ],
   },
   // {
@@ -112,12 +112,11 @@ const Navigations = () => {
 
   return (
     <TreeView
-      items={items}
+      items={navItems}
       dataStructure="tree"
+      keyExpr="id"
       displayExpr="text"
       parentIdExpr="parentId"
-      idField="id"
-      expandEvent="click"
       onItemClick={onItemClick}
     />
   );

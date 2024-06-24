@@ -5,7 +5,7 @@ import { ValidationGroup } from "devextreme-react/validation-group";
 import { Validator, CustomRule, RequiredRule } from "devextreme-react/validator";
 import notify from "devextreme/ui/notify";
 import CustomStore from "devextreme/data/custom_store";
-import "devextreme/dist/css/dx.light.css";
+//import "devextreme/dist/css/dx.light.css";
 import { RadioGroup } from "devextreme-react/radio-group";
 import TextArea from "devextreme-react/text-area";
 import TextBox, { TextBoxTypes } from "devextreme-react/text-box";

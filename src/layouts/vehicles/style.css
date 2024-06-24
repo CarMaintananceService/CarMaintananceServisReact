@@ -42,3 +42,7 @@
     border-bottom: none;
   }
   
+
+  .dx-editor-outlined.dx-texteditor-with-floating-label, .dx-editor-outlined.dx-texteditor-with-label {
+    margin-top: 11.5px !important;
+}

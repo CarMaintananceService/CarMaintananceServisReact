@@ -13,8 +13,10 @@ import DataGrid, {
   Paging,
   Sorting,
   Selection,
-  Button,
+  Button as DataGridButton,
 } from "devextreme-react/data-grid";
+import { Button } from "devextreme-react/button";
+
 import CustomStore from "devextreme/data/custom_store";
 import { prepareFilterBody } from "shared/dxHelpers";
 import useAxios from "../../service/useAxios";
@@ -26,9 +28,10 @@ const Vehicles = () => {
   const navigate = useNavigate();
   const { token } = useSelector((state) => state.auth); // Auth state'ten token alın
   const [isVisible, setIsVisible] = useState(false);
-  const transactionData = {}; // API'den gelen veriyi buraya atayın.
+  const [transactionData, settransactionData] = useState();
   const onEditting = useCallback((e) => {
-    console.log(e);
+    settransactionData(null);
+    settransactionData({ ...e.row.data });
     setIsVisible(true);
     // const clonedItem = { ...e.row.data, ID: getMaxID() };
     // setEmployees((prevState) => {
@@ -143,7 +146,6 @@ const Vehicles = () => {
           hoverStateEnabled={false}
           cacheEnabled={false}
           syncLookupFilterValues={false}
-          selectedRowKeys={[]}
         >
           <Scrolling scrollByContent={true} scrollByThumb={true} preloadEnabled={true} />
           <Sorting mode="single" />
@@ -152,21 +154,42 @@ const Vehicles = () => {
             allowDeleting={true}
             useIcons={true}
             newRowPosition="pageBottom"
-            allowUpdating={true}
-            allowAdding={true}
+            allowUpdating={false}
+            allowAdding={false}
           />
           <Selection mode="single" />
           <FilterRow visible={true} />
           <Paging pageSize={20} />
-          <Column type="buttons" width={110}>
-            <Button name="delete" />
-            <Button hint="Clone" icon="edit" onClick={onEditting} />
+          <Column
+            type="buttons"
+            width={110}
+            headerCellRender={() => (
+              <div className="grid-header-button">
+                <Button
+                  stylingMode="text"
+                  type="default"
+                  icon="add"
+                  width="100%"
+                  onClick={() => {
+                    settransactionData({});
+                    setIsVisible(true);
+                  }}
+                />
+              </div>
+            )}
+          >
+            <DataGridButton name="delete" hint="Sil" />
+            <DataGridButton hint="Güncelle" icon="edit" onClick={onEditting} />
           </Column>
           <Column dataField="LicensePlateNo" caption="LicensePlateNo">
             <Editing
               validationRules={[
                 { type: "required", message: "?" },
-                { type: "stringLength", max: 250, message: "Maksimum 250 karakter" },
+                {
+                  type: "stringLength",
+                  max: 250,
+                  message: "Maksimum 250 karakter",
+                },
               ]}
             />
           </Column>
@@ -174,7 +197,11 @@ const Vehicles = () => {
             <Editing
               validationRules={[
                 { type: "required", message: "?" },
-                { type: "stringLength", max: 250, message: "Maksimum 250 karakter" },
+                {
+                  type: "stringLength",
+                  max: 250,
+                  message: "Maksimum 250 karakter",
+                },
               ]}
             />
           </Column>
@@ -182,7 +209,11 @@ const Vehicles = () => {
             <Editing
               validationRules={[
                 { type: "required", message: "?" },
-                { type: "stringLength", max: 250, message: "Maksimum 250 karakter" },
+                {
+                  type: "stringLength",
+                  max: 250,
+                  message: "Maksimum 250 karakter",
+                },
               ]}
             />
           </Column>
@@ -190,17 +221,24 @@ const Vehicles = () => {
             <Editing
               validationRules={[
                 { type: "required", message: "?" },
-                { type: "stringLength", max: 250, message: "Maksimum 250 karakter" },
+                {
+                  type: "stringLength",
+                  max: 250,
+                  message: "Maksimum 250 karakter",
+                },
               ]}
             />
           </Column>
         </DataGrid>
         <>
-          <VehicleForm
-            isVisible={isVisible}
-            setIsVisible={setIsVisible}
-            transactionData={transactionData}
-          />
+          {transactionData && (
+            <VehicleForm
+              isVisible={isVisible}
+              setIsVisible={setIsVisible}
+              transactionData={transactionData}
+              settransactionData={settransactionData}
+            />
+          )}
         </>
       </DashboardLayout>
     </div>

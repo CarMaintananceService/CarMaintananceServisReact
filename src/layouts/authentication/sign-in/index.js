@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import useAxios from "../../../service/useAxios"; // API istekleri için axios'u ekliyoruz.
 // @mui material components
@@ -16,7 +17,7 @@ import BasicLayout from "layouts/authentication/components/BasicLayout";
 //import bgImage from "assets/images/bg-sign-in-basic.jpeg";
 // Redux actions
 import { setTokens } from "../../../reducers/authReducer";
-import { Email } from "@mui/icons-material";
+import { ConstructionOutlined, Email } from "@mui/icons-material";
 
 function Basic() {
   const [rememberMe, setRememberMe] = useState(false);
@@ -25,9 +26,9 @@ function Basic() {
   const [error, setError] = useState("");
   const dispatch = useDispatch();
   const { axiosInstance } = useAxios();
+  const navigate = useNavigate();
 
   const handleSetRememberMe = () => setRememberMe(!rememberMe);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(""); // Her gönderimde hatayı sıfırlıyoruz.
@@ -39,6 +40,9 @@ function Basic() {
       });
 
       if (!response.data.Result.isActive || response.data.Result.isExpired) {
+        const notActiveError = response.data.Result.isActive ? "" : " Kullanıcı sistemde değil!";
+        const expiredError = response.data.Result.isExpired ? "" : " Token süresi sona erdi!";
+        setError(`Giriş işlemi başarısız! ${notActiveError} ${expiredError}`);
         return;
       }
       // Eğer giriş başarılı olursa, JWT access ve refresh token'ları localStorage'a kaydediyoruz.
@@ -50,13 +54,12 @@ function Basic() {
         const { token, refreshToken } = response.data.Result.AccessToken;
         localStorage.setItem("accessToken", token);
         localStorage.setItem("refreshToken", refreshToken);
-        // Redux state'ini güncelle
-        dispatch(setTokens({ token: token, refreshToken: refreshToken }));
-        // Yönlendirme veya başka işlemler burada yapılabilir.
-        window.location.href = "/dashboard";
+        dispatch(setTokens({ token: token, refreshToken: refreshToken })); // Redux state'ini güncelle
+        navigate("/dashboard");
       }
     } catch (err) {
       setError("Invalid email or password. Please try again.");
+      console.log("Login error:", err);
     }
   };
 

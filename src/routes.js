@@ -62,7 +62,6 @@ import OutSourceLabor from "layouts/outSourceLabor";
 import ProductGroup from "layouts/productGroup";
 import { TreeView } from "devextreme-react";
 import treeview from "layouts/productGroup";
-import Treeview from "layouts/treeview";
 import { Children } from "react";
 
 const routes = [
@@ -73,14 +72,6 @@ const routes = [
     icon: <Icon fontSize="small">dashboard</Icon>,
     route: "/dashboard",
     component: <Dashboard />,
-  },
-  {
-    type: "collapse",
-    name: "treeview",
-    key: "treeview",
-    icon: <Icon fontSize="small">dashboard</Icon>,
-    route: "/treeview",
-    component: <Treeview />,
   },
   // {
   //   type: "collapse",
@@ -255,7 +246,7 @@ const routes = [
     name: "Sign In",
     key: "sign-in",
     icon: <Icon fontSize="small">login</Icon>,
-    route: "/authentication/sign-in",
+    route: "/login",
     component: <SignIn />,
   },
   // {

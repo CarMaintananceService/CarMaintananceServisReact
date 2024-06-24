@@ -128,7 +128,6 @@ const ProductGroup = () => {
           hoverStateEnabled={false}
           cacheEnabled={false}
           syncLookupFilterValues={false}
-          selectedRowKeys={[]}
         >
           <Scrolling scrollByContent={true} scrollByThumb={true} preloadEnabled={true} />
           <Sorting mode="single" />

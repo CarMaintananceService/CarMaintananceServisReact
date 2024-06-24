@@ -1,20 +1,24 @@
 import React, { useState, useEffect, useRef } from "react";
+// @mui material components
+import Grid from "@mui/material/Grid";
+// Material Dashboard 2 React components
+import MDBox from "components/MDBox";
 import PropTypes from "prop-types";
 import { Popup, Animation, Position, ToolbarItem } from "devextreme-react/popup";
 import { ValidationGroup } from "devextreme-react/validation-group";
 import { Validator, CustomRule, RequiredRule } from "devextreme-react/validator";
 import notify from "devextreme/ui/notify";
 import CustomStore from "devextreme/data/custom_store";
-import "devextreme/dist/css/dx.light.css";
 import { RadioGroup } from "devextreme-react/radio-group";
 import TextArea from "devextreme-react/text-area";
 import TextBox, { TextBoxTypes } from "devextreme-react/text-box";
 import SelectBox from "devextreme-react/select-box";
 import { DateBox } from "devextreme-react/date-box";
+import { NumberBox } from "devextreme-react/number-box";
 import { prepareFilterBody, searchRequestLoad } from "shared/dxHelpers";
 import useAxios from "../../service/useAxios";
 
-const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
+const VehicleForm = ({ isVisible, setIsVisible, transactionData, settransactionData }) => {
   const { axiosInstance } = useAxios();
 
   const [formData, setFormData] = useState({
@@ -51,34 +55,35 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
 
   useEffect(() => {
     setFormData(transactionData);
+    console.log("transactionData : ", transactionData);
   }, [formData.transactionState]);
 
   const dsVehicleBrand = new CustomStore({
+    loadMode: "raw",
     key: "Id",
     load: (loadOptions) => {
       return searchRequestLoad("VehicleBrand/Search", loadOptions, axiosInstance);
     },
   });
-
   const dsVehicleType = new CustomStore({
+    loadMode: "raw",
     key: "Id",
     load: (loadOptions) => {
       return searchRequestLoad("VehicleType/Search", loadOptions, axiosInstance);
     },
   });
   const dsCaseType = new CustomStore({
+    loadMode: "raw",
     key: "Id",
     load: (loadOptions) => {
       return searchRequestLoad("CaseType/Search", loadOptions, axiosInstance);
     },
   });
-  // TODO: STATIC VERİ ALACAK ŞEKİLDE DÜZENLENECEK BU İR ENUM DOSYASI
-  // const dsFuelType = new CustomStore({
-  //   key: "Id",
-  //   load: (loadOptions) => {
-  //     return searchRequestLoad("FuelType/Search", loadOptions, axiosInstance);
-  //   },
-  // });
+  const dsFuelType = [
+    { Id: 1, Name: "Benzin" },
+    { Id: 2, Name: "Mazot" },
+    { Id: 3, Name: "Gaz" },
+  ];
 
   const saveForm = () => {
     if (!mainValidationGroup.current.instance.validate().isValid) {
@@ -92,6 +97,7 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
         const res = response.data;
         if (res.Success) {
           setIsVisible(false);
+          settransactionData(null);
         } else {
           notify(res.Error, "error", 3500);
         }
@@ -127,21 +133,23 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
       <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: "5px" }}>
         <div style={{ height: "calc(100% - 100px)", padding: "10px" }}>
           <ValidationGroup ref={mainValidationGroup}>
-            <SelectBox
-              onValueChanged={(e) => handleInputChange("VehicleBrandId", e.value)}
-              value={formData.VehicleBrandId}
-              dataSource={dsVehicleBrand}
-              displayExpr="Name"
-              valueExpr="Id"
-              labelMode="floating"
-              label="Araç Markası"
-              searchEnabled={true}
-              showClearButton={true}
-            >
-              <Validator>
-                <RequiredRule message="" />
-              </Validator>
-            </SelectBox>
+            <div className="control">
+              <SelectBox
+                onValueChanged={(e) => handleInputChange("VehicleBrandId", e.value)}
+                value={formData.VehicleBrandId}
+                dataSource={dsVehicleBrand}
+                displayExpr="Name"
+                valueExpr="Id"
+                labelMode="floating"
+                label="Araç Markası"
+                searchEnabled={true}
+                showClearButton={true}
+              >
+                <Validator>
+                  <RequiredRule message="?" />
+                </Validator>
+              </SelectBox>
+            </div>
             <SelectBox
               onValueChanged={(e) => handleInputChange("VehicleTypeId", e.value)}
               value={formData.VehicleTypeId}
@@ -154,7 +162,7 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
               showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="" />
+                <RequiredRule message="?" />
               </Validator>
             </SelectBox>
             <SelectBox
@@ -169,13 +177,13 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
               showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="" />
+                <RequiredRule message="?" />
               </Validator>
             </SelectBox>
-            {/* <SelectBox
+            <SelectBox
               onValueChanged={(e) => handleInputChange("FuelType", e.value)}
               value={formData.FuelType}
-              dataSource={dsFuelType}
+              items={dsFuelType}
               displayExpr="Name"
               valueExpr="Id"
               labelMode="floating"
@@ -184,20 +192,20 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
               showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="" />
+                <RequiredRule message="?" />
               </Validator>
-            </SelectBox> */}
+            </SelectBox>
             <TextBox
               onValueChanged={(e) => handleInputChange("LicensePlateNo", e.value)}
               value={formData.LicensePlateNo}
               labelMode="floating"
-              label="PlakaNo"
+              label="Plaka No"
               minxLength="5"
               maxLength="250"
               showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="" />
+                <RequiredRule message="?" />
               </Validator>
             </TextBox>
             <TextBox
@@ -210,7 +218,7 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
               showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="" />
+                <RequiredRule message="?" />
               </Validator>
             </TextBox>
             <DateBox
@@ -233,7 +241,7 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
               showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="" />
+                <RequiredRule message="?" />
               </Validator>
             </TextBox>
             <TextBox
@@ -246,7 +254,7 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
               showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="" />
+                <RequiredRule message="?" />
               </Validator>
             </TextBox>
             <TextBox
@@ -259,7 +267,7 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
               showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="" />
+                <RequiredRule message="?" />
               </Validator>
             </TextBox>
             <TextBox
@@ -272,40 +280,40 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
               showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="" />
+                <RequiredRule message="?" />
               </Validator>
             </TextBox>
             <TextBox
               onValueChanged={(e) => handleInputChange("ColorKeyCode", e.value)}
               value={formData.ColorKeyCode}
               labelMode="floating"
-              label="ColorKeyCode"
+              label="Renk anahtar kodu"
               minxLength="5"
               maxLength="250"
               showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="" />
+                <RequiredRule message="?" />
               </Validator>
             </TextBox>
             <TextBox
               onValueChanged={(e) => handleInputChange("RadioCode", e.value)}
               value={formData.RadioCode}
               labelMode="floating"
-              label="RadioCode"
+              label="Radyo kodu"
               minxLength="5"
               maxLength="250"
               showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="" />
+                <RequiredRule message="?" />
               </Validator>
             </TextBox>
             <DateBox
               onValueChanged={(e) => handleInputChange("DateOfRegistration", e.value)}
               value={formData.DateOfRegistration}
               labelMode="floating"
-              label="DateOfRegistration Yılı"
+              label="Kayıt tarihi"
               type="date"
               displayFormat="dd-MM-yyyy"
               serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
@@ -315,155 +323,160 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
               onValueChanged={(e) => handleInputChange("ReleaseDate", e.value)}
               value={formData.ReleaseDate}
               labelMode="floating"
-              label="ReleaseDate"
+              label="Yayın tarihi"
               type="date"
               displayFormat="dd-MM-yyyy"
               serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
               showClearButton={true}
             />
-            <TextBox
+            <NumberBox
               onValueChanged={(e) => handleInputChange("EngineDisplacementPowerKW", e.value)}
               value={formData.EngineDisplacementPowerKW}
               labelMode="floating"
-              label="EngineDisplacementPowerKW"
-              minxLength="5"
-              maxLength="250"
+              label="Motor deplasman güç KW"
               showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="" />
+                <RequiredRule message="?" />
               </Validator>
-            </TextBox>
-            <TextBox
+            </NumberBox>
+            <NumberBox
               onValueChanged={(e) => handleInputChange("NetWeight", e.value)}
               value={formData.NetWeight}
               labelMode="floating"
-              label="NetWeight"
-              minxLength="5"
-              maxLength="250"
+              label="Net ağırlığı"
               showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="" />
+                <RequiredRule message="?" />
               </Validator>
-            </TextBox>
-            <DateBox
-              onValueChanged={(e) => handleInputChange("WarrantyEndDate", e.value)}
-              value={formData.WarrantyEndDate}
-              labelMode="floating"
-              label="WarrantyEndDate"
-              type="date"
-              displayFormat="dd-MM-yyyy"
-              serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
-              showClearButton={true}
-            />
-            <DateBox
-              onValueChanged={(e) => handleInputChange("DateOfLastMedicalInspection", e.value)}
-              value={formData.DateOfLastMedicalInspection}
-              labelMode="floating"
-              label="DateOfLastMedicalInspection"
-              type="date"
-              displayFormat="dd-MM-yyyy"
-              serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
-              showClearButton={true}
-            />
-            <DateBox
-              onValueChanged={(e) => handleInputChange("FenniMuayeneEndDate", e.value)}
-              value={formData.FenniMuayeneEndDate}
-              labelMode="floating"
-              label="FenniMuayeneEndDate"
-              type="date"
-              displayFormat="dd-MM-yyyy"
-              serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
-              showClearButton={true}
-            />
-            <DateBox
-              onValueChanged={(e) => handleInputChange("LastExhaustInspectionDate", e.value)}
-              value={formData.LastExhaustInspectionDate}
-              labelMode="floating"
-              label="LastExhaustInspectionDate"
-              type="date"
-              displayFormat="dd-MM-yyyy"
-              serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
-              showClearButton={true}
-            />
-            <DateBox
-              onValueChanged={(e) => handleInputChange("TrafficInsuranceStartDate", e.value)}
-              value={formData.TrafficInsuranceStartDate}
-              labelMode="floating"
-              label="TrafficInsuranceStartDate"
-              type="date"
-              displayFormat="dd-MM-yyyy"
-              serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
-              showClearButton={true}
-            />
-            <DateBox
-              onValueChanged={(e) => handleInputChange("TrafficInsuranceEndDate", e.value)}
-              value={formData.TrafficInsuranceEndDate}
-              labelMode="floating"
-              label="TrafficInsuranceEndDate"
-              type="date"
-              displayFormat="dd-MM-yyyy"
-              serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
-              showClearButton={true}
-            />
-            <DateBox
-              onValueChanged={(e) => handleInputChange("InsuranceStartDate", e.value)}
-              value={formData.InsuranceStartDate}
-              labelMode="floating"
-              label="InsuranceStartDate"
-              type="date"
-              displayFormat="dd-MM-yyyy"
-              serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
-              showClearButton={true}
-            />
-            <DateBox
-              onValueChanged={(e) => handleInputChange("InsuranceEndDate", e.value)}
-              value={formData.InsuranceEndDate}
-              labelMode="floating"
-              label="InsuranceEndDate"
-              type="date"
-              displayFormat="dd-MM-yyyy"
-              serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
-              showClearButton={true}
-            />
+            </NumberBox>
+            <MDBox py={3}>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6} lg={6}>
+                  <MDBox mb={1.5}>
+                    <div>Önemli tarihler</div>
+                    <DateBox
+                      onValueChanged={(e) => handleInputChange("WarrantyEndDate", e.value)}
+                      value={formData.WarrantyEndDate}
+                      labelMode="floating"
+                      label="Garanti bitiş tarihi"
+                      type="date"
+                      displayFormat="dd-MM-yyyy"
+                      serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
+                      showClearButton={true}
+                    />
+                    {/* <DateBox
+                      onValueChanged={(e) => handleInputChange("DateOfLastMedicalInspection", e.value)}
+                      value={formData.DateOfLastMedicalInspection}
+                      labelMode="floating"
+                      label="DateOfLastMedicalInspection"
+                      type="date"
+                      displayFormat="dd-MM-yyyy"
+                      serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
+                      showClearButton={true}
+                    /> */}
+                    <DateBox
+                      onValueChanged={(e) => handleInputChange("FenniMuayeneEndDate", e.value)}
+                      value={formData.FenniMuayeneEndDate}
+                      labelMode="floating"
+                      label="Fenni Muayene Bitiş Tarihi"
+                      type="date"
+                      displayFormat="dd-MM-yyyy"
+                      serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
+                      showClearButton={true}
+                    />
+                    {/* <DateBox
+                      onValueChanged={(e) => handleInputChange("LastExhaustInspectionDate", e.value)}
+                      value={formData.LastExhaustInspectionDate}
+                      labelMode="floating"
+                      label="LastExhaustInspectionDate"
+                      type="date"
+                      displayFormat="dd-MM-yyyy"
+                      serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
+                      showClearButton={true}
+                    />
+                    <DateBox
+                      onValueChanged={(e) => handleInputChange("TrafficInsuranceStartDate", e.value)}
+                      value={formData.TrafficInsuranceStartDate}
+                      labelMode="floating"
+                      label="TrafficInsuranceStartDate"
+                      type="date"
+                      displayFormat="dd-MM-yyyy"
+                      serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
+                      showClearButton={true}
+                    /> */}
+                    <DateBox
+                      onValueChanged={(e) => handleInputChange("TrafficInsuranceEndDate", e.value)}
+                      value={formData.TrafficInsuranceEndDate}
+                      labelMode="floating"
+                      label="Trafik Sigorta Bitiş Tarihi"
+                      type="date"
+                      displayFormat="dd-MM-yyyy"
+                      serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
+                      showClearButton={true}
+                    />
+                    <DateBox
+                      onValueChanged={(e) => handleInputChange("InsuranceStartDate", e.value)}
+                      value={formData.InsuranceStartDate}
+                      labelMode="floating"
+                      label="Sigorta Başlangıç Tarihi"
+                      type="date"
+                      displayFormat="dd-MM-yyyy"
+                      serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
+                      showClearButton={true}
+                    />
+                    <DateBox
+                      onValueChanged={(e) => handleInputChange("InsuranceEndDate", e.value)}
+                      value={formData.InsuranceEndDate}
+                      labelMode="floating"
+                      label="Sigorta Bitiş Tarihi"
+                      type="date"
+                      displayFormat="dd-MM-yyyy"
+                      serializationFormat="yyyy-MM-ddTHH:mm:ssZ"
+                      showClearButton={true}
+                    />
+                  </MDBox>
+                </Grid>
+              </Grid>
+            </MDBox>
             <TextBox
               onValueChanged={(e) => handleInputChange("UnitUsingTheTool", e.value)}
               value={formData.UnitUsingTheTool}
               labelMode="floating"
-              label="UnitUsingTheTool"
+              label="Birim Aracı Kullanma"
               minxLength="5"
               maxLength="250"
               showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="" />
+                <RequiredRule message="?" />
               </Validator>
             </TextBox>
             <TextBox
               onValueChanged={(e) => handleInputChange("PhotoOfTheVehicle", e.value)}
               value={formData.PhotoOfTheVehicle}
               labelMode="floating"
-              label="PhotoOfTheVehicle"
+              label="Aracın Fotoğrafı"
               minxLength="5"
               maxLength="250"
               showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="" />
+                <RequiredRule message="?" />
               </Validator>
             </TextBox>
             <TextBox
               onValueChanged={(e) => handleInputChange("Description", e.value)}
               value={formData.Description}
               labelMode="floating"
-              label="Description"
+              label="Açıklama"
               minxLength="5"
               maxLength="250"
               showClearButton={true}
             >
               <Validator>
-                <RequiredRule message="" />
+                <RequiredRule message="?" />
               </Validator>
             </TextBox>
           </ValidationGroup>
@@ -479,7 +492,10 @@ const VehicleForm = ({ isVisible, setIsVisible, transactionData }) => {
           stylingMode: "text",
           type: "danger",
           icon: "close",
-          onClick: () => setIsVisible(false),
+          onClick: () => {
+            setIsVisible(false);
+            settransactionData(null);
+          },
         }}
       />
 
@@ -503,6 +519,7 @@ VehicleForm.propTypes = {
   isVisible: PropTypes.bool.isRequired,
   setIsVisible: PropTypes.func.isRequired,
   transactionData: PropTypes.object.isRequired,
+  settransactionData: PropTypes.func.isRequired,
 };
 
 export default VehicleForm;

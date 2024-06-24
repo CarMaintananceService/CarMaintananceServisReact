@@ -1,4 +1,7 @@
-import "devextreme/dist/css/dx.light.css";
+//import "devextreme/dist/css/dx.light.css";
+import "devextreme/dist/css/dx.fluent.saas.light.compact.css";
+import trMessages from "devextreme/localization/messages/tr.json";
+import { locale, loadMessages } from "devextreme/localization";
 /**
 =========================================================
 * Material Dashboard 2 React - v2.2.0
@@ -65,6 +68,8 @@ export default function App() {
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const { pathname } = useLocation();
 
+  loadMessages(trMessages);
+  locale("tr");
   // Open sidenav when mouse enter on mini sidenav
   const handleOnMouseEnter = () => {
     if (miniSidenav && !onMouseEnter) {
@@ -165,7 +170,7 @@ export default function App() {
           <Sidenav
             color={sidenavColor}
             brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-            brandName="Material Dashboard 2"
+            brandName="Araç Servisi"
             routes={routes}
             onMouseEnter={handleOnMouseEnter}
             onMouseLeave={handleOnMouseLeave}

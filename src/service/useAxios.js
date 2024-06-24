@@ -13,14 +13,15 @@ const useAxios = () => {
     baseURL: `${process.env.REACT_APP_SERVER_API_URL}`,
     headers: { Authorization: `Bearer ${token}` },
   });
-
   axiosInstance.interceptors.response.use(
     (response) => response, // Başarılı yanıtları doğrudan döndürün
     async (error) => {
       const originalRequest = error.config;
+      console.log("axios error interceptor:", error);
       if (error.response && error.response.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true; // Tekrar etme işaretini ekleyin
         try {
+          console.log("refreshToken");
           //refreshToken state'te mevcut değilse, yedek olarak localStorage'dan almayı deneyi
           const storedRefreshToken = refreshToken || localStorage.getItem("refreshToken");
 
@@ -35,9 +36,11 @@ const useAxios = () => {
           const response = await axios.post(
             `${process.env.REACT_APP_SERVER_API_URL}/login/refreshtoken`,
             {
+              accessToken: token || localStorage.getItem("accessToken"),
               refreshToken: storedRefreshToken,
             }
           );
+          //<!IMPORTANT> BURADA RESPONSE KONTROLLERİ YAPILACAK
           const { AccessToken: newToken, RefreshToken: newRefreshToken } = response.AccessToken;
           // Yeni tokenları localStorage'a kaydedin
           localStorage.setItem("accessToken", newToken);
