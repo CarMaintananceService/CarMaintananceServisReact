@@ -124,7 +124,7 @@ const Vehicles = () => {
 
   useEffect(() => {
     if (gridRef.current) {
-      console.log(gridRef.current.instance);
+      //console.log(gridRef.current.instance);
     }
   }, []);
 

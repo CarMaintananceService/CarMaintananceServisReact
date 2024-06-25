@@ -33,28 +33,12 @@ const navItems = [
       { id: "3_3", text: "Hareketler", path: "/stockMovements" },
     ],
   },
-  // {
-  //   id: "4",
-  //   text: "StockCards",
-  //   icon: "folder",
-  //   path: "/stockCards",
-  //   items: [
-  //     { id: "2_1", text: "StockCardUnit", path: "/stockCardUnit" },
-  //     { id: "2_2", text: "StockCardBrands", path: "/stockCardBrand" },
-  //     { id: "2_3", text: "StockMovements", path: "/stockMovements" },
-  //   ],
-  // },
-  // {
-  //   id: "5",
-  //   text: "StockCards",
-  //   icon: "folder",
-  //   path: "/stockCards",
-  //   items: [
-  //     { id: "2_1", text: "StockCardUnit", path: "/stockCardUnit" },
-  //     { id: "2_2", text: "StockCardBrands", path: "/stockCardBrand" },
-  //     { id: "2_3", text: "StockMovements", path: "/stockMovements" },
-  //   ],
-  // },
+  {
+    id: "4",
+    text: "Tamir Hareketleri",
+    icon: "folder",
+    path: "/repairActivity",
+  },
   // {
   //   id: "6",
   //   text: "StockCards",
@@ -99,6 +83,12 @@ const navItems = [
   //     { id: "2_3", text: "StockMovements", path: "/stockMovements" },
   //   ],
   // },
+  {
+    id: "10",
+    text: "Sign In",
+    icon: "folder",
+    path: "/login",
+  },
 ];
 
 const Navigations = () => {

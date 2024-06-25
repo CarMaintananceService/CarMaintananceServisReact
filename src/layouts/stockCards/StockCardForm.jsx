@@ -137,7 +137,7 @@ const StockCardForm = ({ isVisible, setIsVisible, transactionData }) => {
               displayExpr="Name"
               valueExpr="Id"
               labelMode="floating"
-              label="NameOfThePurchasingCompanyId"
+              label="Satın Alan Şirketin Adı"
               searchEnabled={true}
               showClearButton={true}
             >
@@ -152,7 +152,7 @@ const StockCardForm = ({ isVisible, setIsVisible, transactionData }) => {
               displayExpr="Name"
               valueExpr="Id"
               labelMode="floating"
-              label="StockCardUnitId"
+              label="Stok Kart Birimi"
               searchEnabled={true}
               showClearButton={true}
             >
@@ -167,7 +167,7 @@ const StockCardForm = ({ isVisible, setIsVisible, transactionData }) => {
               displayExpr="Name"
               valueExpr="Id"
               labelMode="floating"
-              label="StockCardBrandId"
+              label="Stok Kart Markası"
               searchEnabled={true}
               showClearButton={true}
             >
@@ -179,7 +179,7 @@ const StockCardForm = ({ isVisible, setIsVisible, transactionData }) => {
               onValueChanged={(e) => handleInputChange("StockCode", e.value)}
               value={formData.StockCode}
               labelMode="floating"
-              label="StockCode"
+              label="Stok Kodu"
               minxLength="5"
               maxLength="250"
               showClearButton={true}
@@ -192,7 +192,7 @@ const StockCardForm = ({ isVisible, setIsVisible, transactionData }) => {
               onValueChanged={(e) => handleInputChange("ProductCode", e.value)}
               value={formData.ProductCode}
               labelMode="floating"
-              label="ProductCode"
+              label="Ürün Kodu"
               minxLength="5"
               maxLength="250"
               showClearButton={true}
@@ -205,11 +205,128 @@ const StockCardForm = ({ isVisible, setIsVisible, transactionData }) => {
               onValueChanged={(e) => handleInputChange("Unit", e.value)}
               value={formData.Unit}
               labelMode="floating"
-              label="Unit"
+              label="Birim"
               minxLength="5"
               maxLength="250"
               showClearButton={true}
             />
+            <TextBox
+              onValueChanged={(e) => handleInputChange("SpecialCode", e.value)}
+              value={formData.StockCode}
+              labelMode="floating"
+              label="Özel Kod"
+              minxLength="5"
+              maxLength="250"
+              showClearButton={true}
+            >
+              <Validator>
+                <RequiredRule message="" />
+              </Validator>
+            </TextBox>
+            <TextBox
+              onValueChanged={(e) => handleInputChange("ManufacturerCode", e.value)}
+              value={formData.StockCode}
+              labelMode="floating"
+              label="Üretici Kodu"
+              minxLength="5"
+              maxLength="250"
+              showClearButton={true}
+            >
+              <Validator>
+                <RequiredRule message="" />
+              </Validator>
+            </TextBox>
+            <TextBox
+              onValueChanged={(e) => handleInputChange("ShelfNumber", e.value)}
+              value={formData.StockCode}
+              labelMode="floating"
+              label="Raf Numarası"
+              minxLength="5"
+              maxLength="250"
+              showClearButton={true}
+            >
+              <Validator>
+                <RequiredRule message="" />
+              </Validator>
+            </TextBox>
+            <TextBox
+              onValueChanged={(e) => handleInputChange("BoxNumber", e.value)}
+              value={formData.StockCode}
+              labelMode="floating"
+              label="KutuNumarası"
+              minxLength="5"
+              maxLength="250"
+              showClearButton={true}
+            >
+              <Validator>
+                <RequiredRule message="" />
+              </Validator>
+            </TextBox>
+            <TextBox
+              onValueChanged={(e) => handleInputChange("PurchasePrice", e.value)}
+              value={formData.StockCode}
+              labelMode="floating"
+              label="Satın Alma Fiyatı"
+              minxLength="5"
+              maxLength="250"
+              showClearButton={true}
+            >
+              <Validator>
+                <RequiredRule message="" />
+              </Validator>
+            </TextBox>
+            <TextBox
+              onValueChanged={(e) => handleInputChange("InvoiceNo", e.value)}
+              value={formData.StockCode}
+              labelMode="floating"
+              label="Fatura No"
+              minxLength="5"
+              maxLength="250"
+              showClearButton={true}
+            >
+              <Validator>
+                <RequiredRule message="" />
+              </Validator>
+            </TextBox>
+            <TextBox
+              onValueChanged={(e) => handleInputChange("Quantity", e.value)}
+              value={formData.StockCode}
+              labelMode="floating"
+              label="Miktar"
+              minxLength="5"
+              maxLength="250"
+              showClearButton={true}
+            >
+              <Validator>
+                <RequiredRule message="" />
+              </Validator>
+            </TextBox>
+            <TextBox
+              onValueChanged={(e) => handleInputChange("PacanianPhoto", e.value)}
+              value={formData.StockCode}
+              labelMode="floating"
+              label="PacanianPhoto"
+              minxLength="5"
+              maxLength="250"
+              showClearButton={true}
+            >
+              <Validator>
+                <RequiredRule message="" />
+              </Validator>
+            </TextBox>
+            <TextBox
+              onValueChanged={(e) => handleInputChange("Description", e.value)}
+              value={formData.StockCode}
+              labelMode="floating"
+              label="Açıklama"
+              minxLength="5"
+              maxLength="250"
+              showClearButton={true}
+            >
+              <Validator>
+                <RequiredRule message="" />
+              </Validator>
+            </TextBox>
             {/*<TextBox
               onValueChanged={(e) => handleInputChange("Engine", e.value)}
               value={formData.Engine}

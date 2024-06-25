@@ -1,8 +1,53 @@
-#tree-list-demo {
-    min-height: 700px;
+#events {
+    background-color: rgba(191, 191, 191, 0.15);
+    padding: 20px;
+    margin-top: 20px;
   }
   
-  #employees {
-    max-height: 640px;
+  #events > div {
+    padding-bottom: 5px;
   }
   
+  #events > div::after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+  
+  #events #clear {
+    float: right;
+  }
+  
+  #events .caption {
+    float: left;
+    font-weight: bold;
+    font-size: 115%;
+    line-height: 115%;
+    padding-top: 7px;
+  }
+  
+  #events ul {
+    list-style: none;
+    max-height: 100px;
+    overflow: auto;
+    margin: 0;
+  }
+  
+  #events ul li {
+    padding: 7px 0;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  #events ul li:last-child {
+    border-bottom: none;
+  }
+  
+
+  .dx-editor-outlined.dx-texteditor-with-floating-label, .dx-editor-outlined.dx-texteditor-with-label {
+    margin-top: 11.5px !important;
+}
+
+.dx-widget dx-button dx-button-mode-text dx-button-normal dx-button-has-text dx-button-has-icon dx-datagrid-toolbar-button dx-edit-button dx-datagrid-addrow-button {
+  display: none;
+  visibility: hidden;
+}
